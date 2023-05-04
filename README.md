@@ -1,6 +1,6 @@
-SecureAuction
+# SecureAuction
 ====================
-SecureAuction is a web-based auction platform where users can create accounts, list items for auction, bid on items, and manage their auctions. 
+ SecureAuction is a web-based auction platform where users can create accounts, list items for auction, bid on items, and manage their auctions. 
 -----------------------------------------------
 
 # Bid Information Vulnerability
