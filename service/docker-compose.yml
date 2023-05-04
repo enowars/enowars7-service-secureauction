@@ -1,11 +1,26 @@
-version: '3'
+# Set the Docker Compose file version
+version: '3.8'
+
+# Define the services that make up the application stack
 services:
-  n0t3b00k:
+  # Define the web service, which represents the PHP web application
+  web:
+    # Build the Docker image using the provided Dockerfile
     build: .
-    # The code should be copied into the container using COPY.
-    # Mount the data folder writable, so that information can be persisted across restarts.
-    volumes:
-      - ./data/:/data:rw
-    # Define the port mapping (external:internal port)
+    # Map the host's port 8000 to the container's port 80
     ports:
-      - "2323:8000"
+      - "8000:80"
+    # Define a dependency on the db service, ensuring it starts before the web service
+    depends_on:
+      - db
+
+  # Define the db service, which represents the MySQL database
+  db:
+    # Use the official MySQL 5.7 image as the base image
+    image: "mysql:5.7"
+    # Set environment variables used by the MySQL image for configuration
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_DATABASE: secureauction
+      MYSQL_USER: secureauction
+      MYSQL_PASSWORD: secureauction

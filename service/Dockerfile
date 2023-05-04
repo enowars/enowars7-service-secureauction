@@ -1,24 +1,23 @@
-# Use a suitable base-image.
-FROM python:3-alpine
+# Use the official PHP 7.4 image with Apache as the base image
+FROM php:7.4-apache
 
-# Create a seperate user and chown new directories if necessary
-RUN addgroup --system service
-RUN adduser --system --ingroup service --uid 1000 service
+# Install the necessary PHP extensions for MySQL and PDO
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Create our mapped data volume endpoint
-RUN mkdir /data/
+# Copy the application's source code to the container's web directory
+COPY ./src /var/www/html
 
-# Copy our entrypoint.sh and make it executable
-COPY entrypoint.sh /
+# Copy the entrypoint script to the container and make it executable
+COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Copy our service
-COPY src/ /service/
+# Copy the SQL initialization file to the container
+COPY ./init.sql /docker-entrypoint-initdb.d/
 
-# Change the working directory.
-WORKDIR /service/
-# Expose the service's port
-EXPOSE 8000
-
-# Run the service
+# Set the entrypoint script to be executed when the container starts up
 ENTRYPOINT ["/entrypoint.sh"]
+
+# Set the default command to run Apache in the foreground
+CMD ["apache2-foreground"]
+
+
