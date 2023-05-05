@@ -1,0 +1,37 @@
+# Set the Docker Compose file version
+version: '3'
+
+# Define the services that make up the application stack
+services:
+  # Define the web service, which represents the PHP web application
+  www:
+    # Build the Docker image using the provided Dockerfile
+    image: php:apache
+    # sync project dir with container web dir
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - "./:/var/www/html"
+    # Map the host's port 8000 to the container's port 80
+    ports:
+      - "80:80"
+    # Define a dependency on the db service, ensuring it starts before the web service
+    depends_on:
+      - db
+
+  # Define the db service, which represents the MySQL database
+  db:
+    # Use the official MySQL latest image as the base image
+    image: "mysql:latest"
+    # Set environment variables used by the MySQL image for configuration
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_DATABASE: secureauction
+      MYSQL_USER: secureauction
+      MYSQL_PASSWORD: secureauction
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8001:80
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
