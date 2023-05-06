@@ -43,3 +43,31 @@ CREATE TABLE IF NOT EXISTS auctions (
   completed BOOLEAN DEFAULT FALSE,
   FOREIGN KEY (item_id) REFERENCES items(id)
 );
+
+
+-- Insert data
+-- Users
+INSERT INTO users (username, password) VALUES ('user1', 'password1');
+INSERT INTO users (username, password) VALUES ('user2', 'password2');
+INSERT INTO users (username, password) VALUES ('user3', 'password3');
+INSERT INTO users (username, password) VALUES ('user4', 'password4');
+INSERT INTO users (username, password) VALUES ('user5', 'password5');
+
+-- Items
+INSERT INTO items (user_id, item_name, starting_price) VALUES (1, 'Vintage Camera', 50);
+INSERT INTO items (user_id, item_name, starting_price) VALUES (2, 'Antique Vase', 100);
+INSERT INTO items (user_id, item_name, starting_price) VALUES (3, 'Rare Book', 200);
+INSERT INTO items (user_id, item_name, starting_price) VALUES (4, 'Old Map', 30);
+INSERT INTO items (user_id, item_name, starting_price) VALUES (5, 'Collector Coin', 10);
+
+-- Bids
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (2, 1, 60);
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (3, 1, 70);
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (4, 2, 120);
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (5, 2, 130);
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (1, 3, 250);
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (2, 3, 300);
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (3, 4, 40);
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (4, 4, 50);
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (5, 5, 20);
+INSERT INTO bids (user_id, item_id, bid_amount) VALUES (1, 5, 25);
