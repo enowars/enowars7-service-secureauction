@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # This is the entrypoint.sh script for the SecureAuction application
 
 # Wait for the MySQL container to become ready

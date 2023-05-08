@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  www:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "./src:/var/www/html"
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+  db:
+    image: "mysql:latest"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_DATABASE: secureauction
+      MYSQL_USER: ""
+      MYSQL_PASSWORD: ""
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8001:80
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+
