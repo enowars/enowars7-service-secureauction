@@ -11,46 +11,20 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     $user_name = $_POST['user_name']; // Get the username from the form
     $password = $_POST['password']; // Get the password from the form
 
-    echo "Username: " . $user_name . "<br>";
-    echo "Password: " . $password . "<br>";
-
     // Validate the input
     if(!empty($user_name) && !empty($password) && !is_numeric($user_name))
     {   
-        echo "Read from the database\n";
         // Read from the database
-        $query = "select * from users where username = '$user_name' limit 1";
+        $query = "SELECT * FROM users WHERE user_name = '$user_name' LIMIT 1";
         $result = mysqli_query($con, $query);
-        // print query result
-        echo "Result content:: " . $result . "<br>";
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                // Access and display the values from each row
-                echo "User ID: " . $row['user_id'] . "<br>";
-                echo "Username: " . $row['username'] . "<br>";
-                echo "Password: " . $row['password'] . "<br>";
-                echo "Created at: " . $row['created_at'] . "<br>";
-                // Add any other fields you want to display
-                echo "<br>";
-            }
-        } else {
-            echo "No rows found.";
-        }
-        // print query content
-        echo "\nQuery content: " . $query . "<br>";
-        
-
         if($result)
         {
-            echo "Check if a user with the given username exists";
             // Check if a user with the given username exists
             if($result && mysqli_num_rows($result) > 0)
             {
-                echo "Check if clause deep";
                 $user_data = mysqli_fetch_assoc($result);
                 if($user_data['password'] === $password)
                 {
-                    echo "Check last one";
                     // Password is correct, set user_id session and redirect to index.php
                     $_SESSION['user_id'] = $user_data['user_id'];
                     header("Location: index.php");
