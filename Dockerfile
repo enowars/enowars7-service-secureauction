@@ -5,9 +5,16 @@ FROM php:7.4-apache
 RUN docker-php-ext-install mysqli
 RUN docker-php-ext-enable mysqli
 
+# Install the MySQL client utilities
+RUN apt-get update && \
+    apt-get install -y default-mysql-client && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy the application's source code to the container's web directory
-COPY ./src /var/www/html
+# Copy the entrypoint.sh script to the container
+COPY entrypoint.sh /entrypoint.sh
 
-# Set the default command to run Apache in the foreground
-CMD ["apache2-foreground"]
+# Make the entrypoint.sh script executable
+RUN chmod +x /entrypoint.sh
+
+# Set the entrypoint.sh script as the container's entrypoint
+ENTRYPOINT ["/entrypoint.sh"]

@@ -9,7 +9,8 @@ function check_login($con)
         $id = $_SESSION['user_id'];
 
         // Prepare the query to retrieve user data from the database
-        $query = "SELECT * FROM users WHERE user_id = :id LIMIT 1";
+        $query = "SELECT * FROM users WHERE user_id = '$id' LIMIT 1";
+        //$query = "select * from users where user_id = '$id' limit 1";
 
         // Execute the query
         $result = mysqli_query($con, $query);
@@ -23,10 +24,13 @@ function check_login($con)
             return $user_data;
         }
     }
-
-    // If the user is not logged in or the query failed, redirect to the login page
-    header("Location: login.php");
-    // Note: This line will cause an immediate redirection, so any code after this line will not be executed.
+    else{
+         // If the user is not logged in or the query failed, redirect to the login page
+	    header("Location: login.php");
+	    die;
+        // Note: This line will cause an immediate redirection, so any code after this line will not be executed.
+    }
+   
 }
 
 

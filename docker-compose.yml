@@ -11,6 +11,7 @@ services:
       - "8080:80"
     depends_on:
       - db
+    command: apache2-foreground
 
   db:
     image: "mysql:latest"
@@ -19,8 +20,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: mysecretpassword
       MYSQL_DATABASE: secureauction
-      MYSQL_USER: ""
-      MYSQL_PASSWORD: ""
+      MYSQL_USER: secureauction
+      MYSQL_PASSWORD: secureauction
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
@@ -28,4 +29,6 @@ services:
     environment:
       - PMA_HOST=db
       - PMA_PORT=3306
+
+
 

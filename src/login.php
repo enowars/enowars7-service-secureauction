@@ -1,4 +1,5 @@
 <?php 
+//ob_start(); // Start output buffering
 session_start();
 
 include("config.php");
@@ -11,30 +12,45 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     $user_name = $_POST['user_name']; // Get the username from the form
     $password = $_POST['password']; // Get the password from the form
 
-    // Validate the input
-    if(!empty($user_name) && !empty($password) && !is_numeric($user_name))
-    {   
-        // Read from the database
-        $query = "SELECT * FROM users WHERE user_name = '$user_name' LIMIT 1";
-        $result = mysqli_query($con, $query);
-        if($result)
-        {
+    if(!empty($user_name) && !empty($password)){
+
+        //read from database
+		$query = "select * from users where user_name = '$user_name' limit 1";
+		$result = mysqli_query($con, $query);
+
+        // Validate the input
+        if ($result) {
             // Check if a user with the given username exists
-            if($result && mysqli_num_rows($result) > 0)
-            {
+            if ($result && mysqli_num_rows($result) > 0) {
+                //echo "User found.<br>";
                 $user_data = mysqli_fetch_assoc($result);
-                if($user_data['password'] === $password)
-                {
+                if ($user_data['password'] == $password) {
                     // Password is correct, set user_id session and redirect to index.php
                     $_SESSION['user_id'] = $user_data['user_id'];
+                    
+                    // Print all variables and their values related to the user
+                    /*echo "ID: " . $user_data['id'] . "<br>";
+                    echo "User ID: " . $user_data['user_id'] . "<br>";
+                    echo "User Name: " . $user_data['user_name'] . "<br>";
+                    echo "Password: " . $user_data['password'] . "<br>";
+                    echo "Created At: " . $user_data['created_at'] . "<br>";*/
+                    // Add any other user-related fields you have in your database
+                    //ob_end_clean(); // Clean (erase) the output buffer and turn off output buffering
                     header("Location: index.php");
                     die;
+                } else {
+                    echo "Incorrect password.<br>";
                 }
+            } else {
+                echo "No user found with the given username.<br>";
             }
+        } else {
+            echo "Query failed.<br>";
         }
-        // Invalid username or password
-        echo "wrong username or password!";
+
     }
+
+    
 }
 ?>
 

@@ -3,7 +3,6 @@ session_start();
     $_SESSION;
     include("config.php");
     include("user.php");
-
     $user_data = check_login($con);
 ?>
 

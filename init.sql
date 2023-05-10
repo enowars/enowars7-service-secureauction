@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
   user_name  VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL DEFAULT 'password',
+  password VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_user_id (user_id),
   INDEX idx_user_name (user_name),

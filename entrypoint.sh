@@ -6,7 +6,7 @@
 wait_for_mysql() {
   echo "Waiting for MySQL service to become ready..."
   while ! mysqladmin ping -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" --silent; do
-    sleep 1
+    sleep 3
   done
   echo "MySQL service is now ready."
 }
