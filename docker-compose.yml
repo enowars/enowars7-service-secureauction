@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - "./src:/var/www/html"
+      - "./service:/var/www/html"
     ports:
       - "8080:80"
     depends_on:

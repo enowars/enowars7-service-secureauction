@@ -64,6 +64,22 @@ INSERT INTO items (user_id, name, start_price) VALUES (2, 'Antique Vase', 100);
 INSERT INTO items (user_id, name, start_price) VALUES (3, 'Rare Book', 200);
 INSERT INTO items (user_id, name, start_price) VALUES (4, 'Old Map', 30);
 INSERT INTO items (user_id, name, start_price) VALUES (5, 'Collector Coin', 10);
+INSERT INTO items (user_id, name, start_price) VALUES (2, 'Vintage Watch', 250);
+INSERT INTO items (user_id, name, start_price) VALUES (1, 'Antique Lamp', 80);
+INSERT INTO items (user_id, name, start_price) VALUES (3, 'Rare Painting', 500);
+INSERT INTO items (user_id, name, start_price) VALUES (2, 'Antique Mirror', 100);
+INSERT INTO items (user_id, name, start_price) VALUES (1, 'Vintage Record Player', 150);
+INSERT INTO items (user_id, name, start_price) VALUES (1, 'Rare Comic Book', 300);
+INSERT INTO items (user_id, name, start_price) VALUES (4, 'Vintage Guitar', 350);
+INSERT INTO items (user_id, name, start_price) VALUES (5, 'Antique Clock', 120);
+INSERT INTO items (user_id, name, start_price) VALUES (4, 'Rare Stamp Collection', 400);
+INSERT INTO items (user_id, name, start_price) VALUES (5, 'Vintage Typewriter', 75);
+INSERT INTO items (user_id, name, start_price) VALUES (2, 'Antique Desk', 200);
+INSERT INTO items (user_id, name, start_price) VALUES (1, 'Rare Vinyl Record', 100);
+INSERT INTO items (user_id, name, start_price) VALUES (1, 'Vintage Radio', 60);
+INSERT INTO items (user_id, name, start_price) VALUES (3, 'Antique Chair', 90);
+INSERT INTO items (user_id, name, start_price) VALUES (4, 'Rare Autographed Photo', 250);
+
 
 
 -- Bids
