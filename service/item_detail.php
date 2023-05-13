@@ -41,7 +41,17 @@ include("includes/header.php");
         echo '<h2>' . $item_details['name'] . '</h2>';
         echo '<p>' . $item_details['description'] . '</p>';
         echo '<p>Starting Price: ' . $item_details['start_price'] . '</p>';
-
+        // Get the highest bid for the item by the user
+        $highest_bid = $bid->getUserHighestBid($item_id, $user_data['user_id']);
+        
+        if ($highest_bid) {
+            // If there is a highest bid, display it
+            echo '<p>Your Highest Bid: ' . $highest_bid . '</p>';
+        } else {
+            // If there is no highest bid, display a message indicating no bids have been placed
+            echo '<p>You have not placed a bid on this item yet.</p>';
+        }
+        
         // Displaying a form to place a bid
         echo '<form method="POST" action="place_bid.php">';
         echo '<input type="hidden" name="item_id" value="' . $item_id . '">';

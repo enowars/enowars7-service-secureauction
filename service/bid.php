@@ -89,6 +89,7 @@
                 // Check if the insertion was successful
                 if ($insertResult) {
                     // If the insertion was successful, return true
+                    //echo 'Bid placed successfully!';
                     return true;
                 } else {
                     // If the insertion failed, print the error message and return false
