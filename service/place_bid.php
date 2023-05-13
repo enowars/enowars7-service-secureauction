@@ -47,11 +47,8 @@ $current_user_highest_bid = $bid->getUserHighestBid($item_id, $user_data['id']);
 // Get the bid amount from the POST data
 $bid_amount = isset($_POST['bid_amount']) ? floatval($_POST['bid_amount']) : 0.0;
 
-// If the bid amount is less than the starting price, or less than or equal to the user's highest bid, 
-// or (not a user's bid and less than or equal to the highest bid), redirect back to the item details page
-if ($bid_amount < $item_details['start_price'] || 
-    ($current_user_highest_bid && $bid_amount <= $current_user_highest_bid) || 
-    (!$current_user_highest_bid && $highest_bid && $bid_amount <= $highest_bid)) {
+// If the bid amount is less than the starting price, redirect back to the item details page
+if ($bid_amount < $item_details['start_price']) {
     header("Location: item_detail.php?id=$item_id&error=low_bid");
     exit;
 }
