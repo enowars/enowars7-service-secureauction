@@ -15,7 +15,6 @@
         <ul>
             <li><a href="index.php">Home<a></li>
             <li><a href="my_profile.php">My Profile<a></li>
-            <li><a href="item_detail.php">Place Bid<a></li>
             <li><a href="logout.php">Logout<a></li>
         </ul>
     </nav>
