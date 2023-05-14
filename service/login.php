@@ -4,6 +4,8 @@ session_start();
 include("config.php");
 include("user.php");
 
+$message = ""; // Initialize the message variable
+
 // Check if the form was submitted
 if($_SERVER['REQUEST_METHOD'] == "POST")
 {
@@ -13,9 +15,9 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 
     if(!empty($user_name) && !empty($password)){
 
-        //read from database
-		$query = "select * from users where user_name = '$user_name' limit 1";
-		$result = mysqli_query($con, $query);
+        // Read from the database
+        $query = "SELECT * FROM users WHERE user_name = '$user_name' LIMIT 1";
+        $result = mysqli_query($con, $query);
 
         // Validate the input
         if ($result) {
@@ -28,70 +30,65 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
                     header("Location: index.php");
                     die;
                 } else {
-                    echo "Incorrect password.<br>";
+                    $message = "Incorrect password.";
                 }
             } else {
-                echo "No user found with the given username.<br>";
+                $message = "No user found with the given username.";
             }
         } else {
-            echo "Query failed.<br>";
+            $message = "Query failed.";
         }
-
     }
-
-    
+    else {
+        $message = "Please enter valid information.";
+    }
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>
-        SecureAuction - Login
-    </title>
-    <link rel="stylesheet" href="../style.css">
+    <title>SecureAuction - Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style type="text/css">
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f1f1f1;
-        }
-
-        #text{
-            height: 25px;
-            border-radius: 5px;
-            padding: 4px;
-            border: solid thin #aaa;
-            width: 100%;
-        }
-        #button{
-            padding: 10px;
-            width: 100px;
-            color: rgb(221, 22, 22);
-            background-color: lightblue;
-            border: none;
-        }
-        #box{
-            background-color: grey;
-            margin: auto;
-            width: 300px;
-            padding: 20px;
-            border-radius: 5px;
+            background-color: royalblue;
         }
     </style>
 </head>
 <body>
-    <div id="box">
-        <form method="post">
-            <div style="font-size: 20px;margin: 10px">Login</div>
-            <input id="text"   type="text" name="user_name"><br><br>
-            <input id="text"   type="password" name="password"><br><br>
-            <input id="button" type="submit" value="Login"><br><br>
-            <a href="signup.php">Click to Signup</a><br><br>
-        </form>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        Login
+                    </div>
+                    <div class="card-body">
+                        <?php if (!empty($message)): ?>
+                            <div class="alert alert-danger"><?php echo $message; ?></div>
+                        <?php endif; ?>
+                        <form method="post">
+                            <div class="form-group">
+                                <label for="user_name">Username</label>
+                                <input id="user_name" class="form-control" type="text" name="user_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input id="password" class="form-control" type="password" name="password">
+                            </div>
+                            <button class="btn btn-primary" type="submit">Login</button>
+                        </form>
+                        <p class="mt-3">Don't have an account? <a href="signup.php">Signup</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
