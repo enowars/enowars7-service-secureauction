@@ -23,6 +23,7 @@ if (!$user_data) {
 // Create an Item object
 $item = new Item($con);
 
+// TODO
 // Get the item ID from the POST data
 $item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
 
@@ -42,7 +43,7 @@ $bid = new Bid($con);
 $highest_bid = $bid->getHighestBid($item_id);
 
 // Fetch current user's highest bid for this item
-$current_user_highest_bid = $bid->getUserHighestBid($item_id, $user_data['id']);
+$current_user_highest_bid = $bid->getUserHighestBid($item_id, $user_data['user_id']);
 
 // Get the bid amount from the POST data
 $bid_amount = isset($_POST['bid_amount']) ? floatval($_POST['bid_amount']) : 0.0;
@@ -54,7 +55,7 @@ if ($bid_amount < $item_details['start_price']) {
 }
 
 // Place the bid
-$bid->placeBid($item_id, $user_data['id'], $bid_amount);
+$bid->placeBid($item_id, $user_data['user_id'], $bid_amount);
 
 // Redirect back to the item details page
 header("Location: item_detail.php?id=$item_id&success=bid_placed");

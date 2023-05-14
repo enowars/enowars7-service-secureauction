@@ -102,6 +102,20 @@ class User {
             echo 'Query Error: ' . $this->connection->error;
             return false;
         }
-    }  
+    } 
+    
+    // Function to fetch all bids from a specific user
+    public function getUserBids($user_id) {
+        $query = "SELECT bids.*, items.name AS item_name 
+                FROM bids 
+                INNER JOIN items ON bids.item_id = items.id 
+                WHERE bids.user_id = ?";
+                
+        $stmt = $this->connection->prepare($query);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result;
+    }
 }
 ?>

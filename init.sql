@@ -4,12 +4,10 @@ USE secureauction;
 
 -- Create a `users` table for storing user account information
 CREATE TABLE IF NOT EXISTS users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT NOT NULL,
+  user_id INT AUTO_INCREMENT PRIMARY KEY,
   user_name  VARCHAR(255) NOT NULL,
   password VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_user_id (user_id),
   INDEX idx_user_name (user_name),
   INDEX idx_password (password)
 );
@@ -23,7 +21,7 @@ CREATE TABLE IF NOT EXISTS items (
   start_price DECIMAL(10,2) NOT NULL,
   user_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
 -- Create a `bids` table for storing bids on auction items
@@ -33,7 +31,7 @@ CREATE TABLE IF NOT EXISTS bids (
   user_id INT,
   item_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id),
   FOREIGN KEY (item_id) REFERENCES items(id)
 );
 
@@ -46,6 +44,7 @@ CREATE TABLE IF NOT EXISTS auctions (
   completed BOOLEAN DEFAULT FALSE,
   FOREIGN KEY (item_id) REFERENCES items(id)
 );
+
 
 
 -- Insert data
