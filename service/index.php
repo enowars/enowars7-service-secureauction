@@ -30,6 +30,9 @@ $result = $item->getItems($page, $itemsPerPage);
 
 // Getting the total number of items
 $totalItems = $item->getTotalItems();
+
+// Calculate the total number of pages
+$totalPages = ceil($totalItems / $itemsPerPage);
 ?>
 
 <!-- Starting the HTML section of the page -->
@@ -62,14 +65,24 @@ $totalItems = $item->getTotalItems();
     }
 
     // Displaying the pagination links
-    echo '<nav class="pagination-nav" aria-label="Page navigation">';
-    echo '<ul class="pagination">';
-    // Looping through each page number and adding it as a pagination link
-    for ($i = 1; $i <= ceil($totalItems / $itemsPerPage); $i++) {
-        echo '<li class="page-item' . ($i == $page ? ' active' : '') . '"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
-    }
-    echo '</ul>';
-    echo '</nav>';
+echo '<nav class="pagination-nav" aria-label="Page navigation">';
+echo '<ul class="pagination">';
+// Previous page link
+if ($page > 1) {
+    echo '<li class="page-item"><a class="page-link" href="?page=' . ($page - 1) . '">Previous</a></li>';
+} else {
+    echo '<li class="page-item"></li>'; // Add an empty element for alignment
+}
+// Page numbers
+for ($i = 1; $i <= $totalPages; $i++) {
+    echo '<li class="page-item' . ($i == $page ? ' active' : '') . '"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
+}
+// Next page link
+if ($page < $totalPages) {
+    echo '<li class="page-item"><a class="page-link" href="?page=' . ($page + 1) . '">Next</a></li>';
+}
+echo '</ul>';
+echo '</nav>';
     ?>
 </div>
 
@@ -81,3 +94,4 @@ $totalItems = $item->getTotalItems();
 <!-- Closing the body and html tags -->
 </body>
 </html>
+
