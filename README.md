@@ -66,11 +66,8 @@ user.php:
 SQL Injection vulnerability in the getUserById() and getUserItems() methods. User input is not properly validated or sanitized before being used in SQL queries. Lack of input validation and sanitization in getUserItemsWithBids() and getUserBidsCount() methods. User input should be properly validated and sanitized to prevent potential security vulnerabilities.
 
 ## TODO
-SQL Injection Prevention but let one free
-Password Hashing
-Enhanced Input Validation and Sanitization
-Bid Encryption
-Rigorous Testing for Flag Security
+SQL Injection Prevention but let one free, Password Hashing, Enhanced Input Validation and Sanitization
+Bid Encryption, Rigorous Testing for Flag Security
 
 
 
