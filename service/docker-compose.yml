@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - "./service:/var/www/html"
+      - ".:/var/www/html"
     ports:
       - "8080:80"
     depends_on:
@@ -29,6 +29,4 @@ services:
     environment:
       - PMA_HOST=db
       - PMA_PORT=3306
-
-
 

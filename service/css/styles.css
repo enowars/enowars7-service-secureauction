@@ -1,108 +1,108 @@
 *{
-  margin: 0;
-  padding: 0;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-nav {
-  background-color: red;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  padding: 50px 100px;
-}
-
-nav h2 {
-  color: white;
-}
-
-nav ul {
-  list-style-type: none;
-  display: flex;
-  gap: 20px;
-}
-
-nav ul li {
-  margin: 0 20px;
-}
-
-nav ul li a {
-  color: white;
-  text-decoration: none;
-}
-
-nav ul li a:hover {
-  color: lightgray;
-}
-
-
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-nav, footer {
-  width: 100%;
-  padding: 15px 0;  /* adjusted padding */
-  background-color: royalblue;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-nav h2, .footer-content h3 {
-  margin-bottom: 5px;
-  text-align: center;
-}
-
-nav ul, footer ul {
-  display: flex;
-  justify-content: center;
-}
-
-nav ul li, footer ul li {
-  list-style: none;
-  display: inline-block;
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
-nav ul li a, footer ul li a {
-  padding: 5px 10px;
-  text-decoration: none;
-  color: #fff;
-}
-
-.footer-content p {
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-footer {
-  position: absolute;
-  bottom: 0;
-}
-
-.pagination-nav {
-  background-color: transparent; /* Remove the background color */
-  padding: 0; /* Reset the padding */
-}
-
-.pagination {
-  justify-content: center; /* Center the pagination */
-}
-
-.pagination .page-item .page-link {
-  color: black; /* Change the color of the pagination numbers */
-  border: none; /* Remove the border from the pagination numbers */
-  padding: .5em 1em; /* Add some padding */
-  margin: .2em; /* Add some margin */
-}
-
-.pagination .page-item.active .page-link {
-  background-color: transparent; /* Remove the background color from the active page number */
-  color: red; /* Change the color of the active page number */
-}
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  
+  nav {
+    background-color: red;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    padding: 50px 100px;
+  }
+  
+  nav h2 {
+    color: white;
+  }
+  
+  nav ul {
+    list-style-type: none;
+    display: flex;
+    gap: 20px;
+  }
+  
+  nav ul li {
+    margin: 0 20px;
+  }
+  
+  nav ul li a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  nav ul li a:hover {
+    color: lightgray;
+  }
+  
+  
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  nav, footer {
+    width: 100%;
+    padding: 15px 0;  /* adjusted padding */
+    background-color: royalblue;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  nav h2, .footer-content h3 {
+    margin-bottom: 5px;
+    text-align: center;
+  }
+  
+  nav ul, footer ul {
+    display: flex;
+    justify-content: center;
+  }
+  
+  nav ul li, footer ul li {
+    list-style: none;
+    display: inline-block;
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+  
+  nav ul li a, footer ul li a {
+    padding: 5px 10px;
+    text-decoration: none;
+    color: #fff;
+  }
+  
+  .footer-content p {
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  footer {
+    position: absolute;
+    bottom: 0;
+  }
+  
+  .pagination-nav {
+    background-color: transparent; /* Remove the background color */
+    padding: 0; /* Reset the padding */
+  }
+  
+  .pagination {
+    justify-content: center; /* Center the pagination */
+  }
+  
+  .pagination .page-item .page-link {
+    color: black; /* Change the color of the pagination numbers */
+    border: none; /* Remove the border from the pagination numbers */
+    padding: .5em 1em; /* Add some padding */
+    margin: .2em; /* Add some margin */
+  }
+  
+  .pagination .page-item.active .page-link {
+    background-color: transparent; /* Remove the background color from the active page number */
+    color: red; /* Change the color of the active page number */
+  }

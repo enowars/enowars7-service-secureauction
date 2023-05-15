@@ -94,4 +94,3 @@ echo '</nav>';
 <!-- Closing the body and html tags -->
 </body>
 </html>
-

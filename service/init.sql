@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS items (
 -- Create a `bids` table for storing bids on auction items
 CREATE TABLE IF NOT EXISTS bids (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  amount DECIMAL(10,2) NOT NULL,
+  amount VARCHAR(255) NOT NULL,
   user_id INT,
   item_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
