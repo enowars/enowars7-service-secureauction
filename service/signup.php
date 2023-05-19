@@ -13,10 +13,16 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 
     if(!empty($user_name) && !empty($password) && !is_numeric($user_name))
     {
-        // Save to the database
+        // Hash the password
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Use prepared statements
+        $stmt = $con->prepare("INSERT INTO users (user_id, user_name, password) VALUES (?, ?, ?)");
         $user_id = rand(6, 20);
-        $query = "INSERT INTO users (user_id, user_name, password) VALUES ('$user_id', '$user_name', '$password')";
-        mysqli_query($con, $query);
+        $stmt->bind_param("iss", $user_id, $user_name, $hashed_password); // "iss" indicates that the first parameter is an integer and the second and third parameters are strings
+
+        // Execute the statement
+        $stmt->execute();
 
         // Redirect to login page
         header("Location: login.php");

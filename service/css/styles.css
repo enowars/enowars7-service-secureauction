@@ -90,6 +90,11 @@
     background-color: transparent; /* Remove the background color */
     padding: 0; /* Reset the padding */
   }
+
+  .pagination .page-item {
+    display: inline-block!important;
+}
+
   
   .pagination {
     justify-content: center; /* Center the pagination */

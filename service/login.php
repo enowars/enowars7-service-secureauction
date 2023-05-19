@@ -12,19 +12,25 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     // Something was posted
     $user_name = $_POST['user_name']; // Get the username from the form
     $password = $_POST['password']; // Get the password from the form
-
+    
     if(!empty($user_name) && !empty($password)){
 
-        // Read from the database
-        $query = "SELECT * FROM users WHERE user_name = '$user_name' LIMIT 1";
-        $result = mysqli_query($con, $query);
-
-        // Validate the input
+        // Use prepared statements to avoid SQL injection
+        $stmt = $con->prepare("SELECT * FROM users WHERE user_name = ? LIMIT 1");
+        $stmt->bind_param("s", $user_name); // "s" indicates that the parameter is a string
+    
+        // Execute the statement
+        $stmt->execute();
+    
+        // Get the result
+        $result = $stmt->get_result();
+    
         if ($result) {
             // Check if a user with the given username exists
             if ($result && mysqli_num_rows($result) > 0) {
                 $user_data = mysqli_fetch_assoc($result);
-                if ($user_data['password'] == $password) {
+                // Use password_verify to check if the password matches the hashed password from the database
+                if (password_verify($password, $user_data['password'])) {
                     // Password is correct, set user_id session and redirect to index.php
                     $_SESSION['user_id'] = $user_data['user_id'];
                     header("Location: index.php");
