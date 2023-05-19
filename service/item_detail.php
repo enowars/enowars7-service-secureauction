@@ -18,8 +18,12 @@ $user_data = $user->checkLogin($con);
 // Creating an Item object and passing database connection as a parameter
 $item = new Item($con);
 
-// Getting the item ID from the URL or setting it to 0 if it's not set
+// Ensure the item ID is a valid integer
 $item_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+if (!filter_var($item_id, FILTER_VALIDATE_INT)) {
+    echo "<div class='alert alert-danger'>Invalid item ID</div>";
+    exit();
+}
 
 // Getting the item details for the specified item ID
 $item_details = $item->getItemDetails($item_id);
@@ -31,45 +35,37 @@ $bid = new Bid($con);
 include("includes/header.php");
 ?>
 
-<!-- Starting the HTML section of the page -->
 <div class="container">
     <h1 class="mt-4 mb-4">Item Details</h1>
     <?php
-    // If item details are available, display them
     if ($item_details) {
-        // Displaying the item name, description, and starting price
-        echo '<h2>' . $item_details['name'] . '</h2>';
-        echo '<p>' . $item_details['description'] . '</p>';
-        echo '<p>Starting Price: ' . $item_details['start_price'] . '</p>';
-        // Get the highest bid for the item by the user
+        // Use htmlspecialchars to prevent XSS
+        echo '<h2>' . htmlspecialchars($item_details['name'], ENT_QUOTES, 'UTF-8') . '</h2>';
+        echo '<p>' . htmlspecialchars($item_details['description'], ENT_QUOTES, 'UTF-8') . '</p>';
+        echo '<p>Starting Price: ' . htmlspecialchars($item_details['start_price'], ENT_QUOTES, 'UTF-8') . '</p>';
+        
         $highest_bid = $bid->getUserHighestBid($item_id, $user_data['user_id']);
         
         if ($highest_bid) {
-            // If there is a highest bid, display it
-            echo '<p>Your Highest Bid: ' . $highest_bid . '</p>';
+            echo '<p>Your Highest Bid: ' . htmlspecialchars($highest_bid, ENT_QUOTES, 'UTF-8') . '</p>';
         } else {
-            // If there is no highest bid, display a message indicating no bids have been placed
             echo '<p>You have not placed a bid on this item yet.</p>';
         }
         
-        // Displaying a form to place a bid
         echo '<form method="POST" action="place_bid.php">';
-        echo '<input type="hidden" name="item_id" value="' . $item_id . '">';
+        echo '<input type="hidden" name="item_id" value="' . htmlspecialchars($item_id, ENT_QUOTES, 'UTF-8') . '">';
         echo '<input type="number" name="bid_amount" placeholder="Your bid">';
         echo '<button type="submit" class="btn btn-primary">Place Bid</button>';
         echo '</form>';
     } else {
-        // If item details are not available, display an error message
         echo "<div class='alert alert-warning' role='alert'>Item not found.</div>";
     }
     ?>
 </div>
 
-<!-- Including the footer file -->
 <?php 
 include("includes/footer.php"); 
 ?>
 
-<!-- Closing the body and html tags -->
 </body>
 </html>
