@@ -51,19 +51,19 @@ Script for user registration. Has a lot of issues like username not unique, rand
 
 ## Security issues
 login.php:
-User input is not properly validated or sanitized before being used in the SQL query. Passwords are stored in plain text, which is not secure. It is recommended to use hashing and salting techniques to store passwords securely.
+User input is not properly validated or sanitized before being used in the SQL query. Passwords are stored in plain text, which is not secure. It is recommended to use hashing and salting techniques to store passwords securely. SOLVED!!!
 
 signup.php:
-User input is not properly validated or sanitized before being used in the SQL query. Passwords are stored in plain text, which is not secure. It is recommended to use hashing and salting techniques to store passwords securely.
+User input is not properly validated or sanitized before being used in the SQL query. Passwords are stored in plain text, which is not secure. It is recommended to use hashing and salting techniques to store passwords securely. SOLVED!!!
 
 item_detail.php:
-Lack of input validation and sanitization when retrieving and displaying item details. User input should be properly validated, and any user-entered data should be sanitized or properly escaped before being displayed to prevent attacks.
+Lack of input validation and sanitization when retrieving and displaying item details. User input should be properly validated, and any user-entered data should be sanitized or properly escaped before being displayed to prevent attacks. SOLVED!!!
 
 place_bid.php:
 Lack of input validation and sanitization when retrieving the bid amount from user input. This can lead to potential security vulnerabilities, including SQL Injection attacks. User input should be properly validated and sanitized before being used in SQL queries to prevent SQL Injection attacks.
 
 user.php:
-SQL Injection vulnerability in the getUserById() and getUserItems() methods. User input is not properly validated or sanitized before being used in SQL queries. Lack of input validation and sanitization in getUserItemsWithBids() and getUserBidsCount() methods. User input should be properly validated and sanitized to prevent potential security vulnerabilities.
+SQL Injection vulnerability in the getUserById() and getUserItems() methods. User input is not properly validated or sanitized before being used in SQL queries. Lack of input validation and sanitization in getUserItemsWithBids() and getUserBidsCount() methods. User input should be properly validated and sanitized to prevent potential security vulnerabilities. SOLVED!!!
 
 ## TODO
 SQL Injection Prevention but let one free, Password Hashing, Enhanced Input Validation and Sanitization
