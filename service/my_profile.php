@@ -24,7 +24,7 @@ $itemsPerPage = 5;
 
 // Gets the items that the user has placed bids on.
 // This method returns a MySQLi result object.
-$result = $user->getUserItemsWithBids($user_data['user_id'], $page, $itemsPerPage);
+$result = $user->getUserBids($user_data['user_id'], $page, $itemsPerPage);
 
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
@@ -44,7 +44,7 @@ $totalItems = $user->getUserBidsCount($user_data['user_id']);
         while ($row = $result->fetch_assoc()) {
             echo '<tr>';
             echo '<th scope="row">' . $row['id'] . '</th>';
-            echo '<td>' . $row['name'] . '</td>';
+            echo '<td>' . $row['item_name'] . '</td>';
             echo '<td>' . $row['start_price'] . '</td>';
             echo '<td>' . $row['created_at'] . '</td>';
             echo '<td>' . $row['amount'] . '</td>';

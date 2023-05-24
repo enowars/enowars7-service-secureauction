@@ -92,3 +92,12 @@ INSERT INTO bids (user_id, item_id, amount) VALUES (3, 4, 40);
 INSERT INTO bids (user_id, item_id, amount) VALUES (4, 4, 50);
 INSERT INTO bids (user_id, item_id, amount) VALUES (5, 5, 20);
 INSERT INTO bids (user_id, item_id, amount) VALUES (1, 5, 25);
+
+-- Create new user with limited privileges
+CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'secure_password';
+
+-- Grant limited permissions to new user on the `secureauction` database
+GRANT SELECT, INSERT, UPDATE ON secureauction.* TO 'appuser'@'%';
+
+-- Tell MySQL server to reload user privileges
+FLUSH PRIVILEGES;

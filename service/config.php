@@ -1,7 +1,7 @@
 <?php
      $dbhost = "db";         // Keep it as "db" to match the service name in docker-compose.yml
-     $dbuser = "root";       // Use the root user for database connection
-     $dbpass = "mysecretpassword";   // Set the password defined in docker-compose.yml
+     $dbuser = "appuser";       // Use the root user for database connection
+     $dbpass = "secure_password";   // Set the password defined in docker-compose.yml
      $dbname = "secureauction";
 
     $con = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);

@@ -27,12 +27,6 @@ class User {
         }
     }
 
-    // Function to fetch all users from the database
-    public function getUsers() {
-        $query = "SELECT * FROM users";
-        $result = mysqli_query($this->connection, $query);
-        return $result;
-    }
 
     // Function to fetch a specific user from the database by their user ID
     public function getUserById($user_id) {
@@ -109,7 +103,7 @@ class User {
         // Function to fetch all bids from a specific user
         public function getUserBids($user_id) {
             // Prepare the query with a placeholder for the user ID
-            $stmt = $this->connection->prepare("SELECT bids.*, items.name AS item_name 
+            $stmt = $this->connection->prepare("SELECT bids.*, items.name AS item_name, items.start_price AS start_price
                                                 FROM bids 
                                                 INNER JOIN items ON bids.item_id = items.id 
                                                 WHERE bids.user_id = ?");

@@ -20,8 +20,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: mysecretpassword
       MYSQL_DATABASE: secureauction
-      MYSQL_USER: secureauction
-      MYSQL_PASSWORD: secureauction
+      MYSQL_USER: appuser    
+      MYSQL_PASSWORD: secure_password    
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
