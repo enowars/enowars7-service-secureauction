@@ -30,30 +30,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("You can only change your own bids.");
     }
 
-    // coder here
-    // Get the item details
     // Get the item details
     $item_details = $item->getItemDetails($itemId);
-
-   
 
     // Create new Bid object
     $bid = new Bid($con);
 
-   
-    // Ensure new bid is higher than current highest bid
-    if ($newBid < $item_details['start_price']) {
-        die("Your new bid must be equal or higher than the starting price bid of {$item_details['start_price']}.");
+    // Ensure new bid is higher than the starting price bid
+    if ($newBid <= $item_details['start_price']) {
+        $errorMessage = "Your new bid must be higher than the starting price bid of {$item_details['start_price']} for the item (ID: {$itemId}, Name: '{$item_details['name']}', Start Price: {$item_details['start_price']}).";
+    }
+
+    // Get the current highest bid for the item from the logged-in user
+    $highestBid = $bid->getHighestBidByUser($itemId, $userId);
+
+    // Ensure new bid is higher than the current highest bid from the logged-in user
+    if ($newBid <= $highestBid) {
+        $errorMessage = "Your new bid must be higher than the current highest bid of {$highestBid} for the item (ID: {$itemId}, Name: '{$item_details['name']}', Start Price: {$item_details['start_price']}).";
+    }
+
+    // Display the error message
+    if (isset($errorMessage)) {
+        echo '<div class="alert alert-danger" role="alert">' . $errorMessage . '</div>';
     }
 
     // Update the bid
     $result = $bid->placeBid($itemId, $userId, $newBid);
 
-
     // If bid was updated successfully
     if ($result) {
-       //echo "Bid updated successfully!";
-       // Redirect back to the previous page
+        //echo "Bid updated successfully!";
+        // Redirect back to the previous page
         header("Location: ".$_SERVER['HTTP_REFERER']);
     } else {
         echo "There was an error updating your bid.";

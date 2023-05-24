@@ -20,50 +20,58 @@ include("includes/header.php");
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 
 // Sets the desired number of items to display per page.
-$itemsPerPage = 5;
+$itemsPerPage = 3;
 
-// Gets the items that the user has placed bids on.
-// This method returns a MySQLi result object.
-$result = $user->getUserBids($user_data['user_id'], $page, $itemsPerPage);
+// Calculate the offset for the SQL query
+$offset = ($page - 1) * $itemsPerPage;
+
+// Get the items that the user has placed bids on.
+$result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
+
+
+
 
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
 ?>  
 
 <div class="container">
-    <h1 class="mt-4 mb-4">Logged in as  <?= $user_data['user_name'] ?></h1>
+    <h1 class="mt-4 mb-4">Logged in as <?= $user_data['user_name'] ?></h1>
 
     <?php
     // If the user has placed bids on items, it displays them in a table.
-    if ($result->num_rows > 0) {
-        echo '<table class="table table-striped">';
-        echo '<thead>';
-        echo '<tr><th scope="col">Item ID</th><th scope="col">Name</th><th scope="col">Start Price</th><th scope="col">Created At</th><th scope="col">Bid Amount</th></tr>';
-        echo '</thead>';
-        echo '<tbody>';
-        while ($row = $result->fetch_assoc()) {
-            echo '<tr>';
-            echo '<th scope="row">' . $row['id'] . '</th>';
-            echo '<td>' . $row['item_name'] . '</td>';
-            echo '<td>' . $row['start_price'] . '</td>';
-            echo '<td>' . $row['created_at'] . '</td>';
-            echo '<td>' . $row['amount'] . '</td>';
-            echo '<td>
-                <form action="change_bid.php" method="post">
-                    <input type="hidden" name="item_id" value="' . $row['id'] . '">
-                    <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
-                    <input type="number" name="new_bid" min="0" required>
-                    <input type="submit" value="Change Bid" class="btn btn-primary">
-                </form>
-            </td>';
-            echo '</tr>';
-        }
+    // If the user has placed bids on items, it displays them in a table.
+if ($result->num_rows > 0) {
+    echo '<table class="table table-striped">';
+    echo '<thead>';
+    echo '<tr><th scope="col">Item ID</th><th scope="col">Item Name</th><th scope="col">Start Price</th><th scope="col">Created At</th><th scope="col">Bid Amount</th></tr>';
+    echo '</thead>';
+    echo '<tbody>';
+    while ($row = $result->fetch_assoc()) {
+        echo '<tr>';
+        echo '<td>' . $row['id'] . '</td>';
+        echo '<td>' . $row['name'] . '</td>';
+        echo '<td>' . $row['start_price'] . '</td>';
+        echo '<td>' . $row['created_at'] . '</td>';
+        echo '<td>' . $row['amount'] . '</td>';
+        echo '<td>
+        <form action="change_bid.php" method="post">
+            <input type="hidden" name="item_id" value="' . $row['id'] . '">
+            <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
+            <input type="number" name="new_bid" min="0" required>
+            <input type="submit" value="Change Bid" class="btn btn-primary">
+        </form>
+        </td>';
+        echo '</tr>';
+    }
+    
         echo '</tbody>';
         echo '</table>';
     } else {
         // If the user hasn't placed any bids, it displays a warning message.
         echo "<div class='alert alert-warning' role='alert'>No items found.</div>";
     }
+
 
     // Prints pagination links.
     echo '<nav class="pagination-nav" aria-label="Page navigation">';
@@ -75,6 +83,7 @@ $totalItems = $user->getUserBidsCount($user_data['user_id']);
     echo '</nav>';
     ?>
 </div>
+
 
 <?php 
     // Includes the page's footer.

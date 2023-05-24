@@ -101,16 +101,13 @@ class User {
         }
     
         // Function to fetch all bids from a specific user
-        public function getUserBids($user_id) {
-            // Prepare the query with a placeholder for the user ID
-            $stmt = $this->connection->prepare("SELECT bids.*, items.name AS item_name, items.start_price AS start_price
-                                                FROM bids 
-                                                INNER JOIN items ON bids.item_id = items.id 
-                                                WHERE bids.user_id = ?");
-            $stmt->bind_param("i", $user_id); // Bind the user ID parameter
+        public function getUserBids($user_id, $offset, $limit) {
+            // Prepare the query with placeholders for the user ID, offset and limit
+            $stmt = $this->connection->prepare("SELECT items.id, items.name, items.start_price, items.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = ? ORDER BY items.created_at DESC LIMIT ?, ?");
+            $stmt->bind_param("iii", $user_id, $offset, $limit); // Bind the user ID, offset and limit parameters
             $stmt->execute(); // Execute the statement
-            $result = $stmt->get_result(); // Get the result
-            return $result;
+            return $stmt->get_result(); // Return the result
         }
+        
     }
 ?>

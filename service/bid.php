@@ -50,6 +50,23 @@
                 return false;
             }
         }
+
+        // Function to get the highest bid placed by a specific user for a given item
+        public function getHighestBidByUser($itemId, $userId) {
+            // Prepare the query with placeholders for the item ID and user ID
+            $stmt = $this->mysqli->prepare("SELECT MAX(amount) AS highest_bid FROM bids WHERE item_id = ? AND user_id = ?");
+            $stmt->bind_param("ii", $itemId, $userId); // Bind the item ID and user ID parameters
+            $stmt->execute(); // Execute the statement
+            $result = $stmt->get_result(); // Get the result
+
+            if ($result && $result->num_rows > 0) {
+                $data = $result->fetch_assoc();
+                return $data['highest_bid'];
+            }
+
+            return 0;
+        }
+
         
 
         // Function to place a bid on an item
