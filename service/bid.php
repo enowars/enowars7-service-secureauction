@@ -12,11 +12,10 @@
 
         // Function to retrieve the highest bid for a given item
         public function getHighestBid($itemId) {
-            // Prepare SQL query to get the maximum bid amount for the given item ID
-            $query = "SELECT MAX(amount) as highest_bid FROM bids WHERE item_id = $itemId";
-
-            // Execute the query using the established database connection
-            $result = $this->mysqli->query($query);
+            $stmt = $this->mysqli->prepare("SELECT MAX(amount) as highest_bid FROM bids WHERE item_id = ?");
+            $stmt->bind_param("i", $itemId); 
+            $stmt->execute(); 
+            $result = $stmt->get_result(); 
 
             // Check if the query was successful
             if ($result) {
@@ -33,23 +32,27 @@
 
         // Function to retrieve the highest bid placed by a specific user for a given item
         public function getUserHighestBid($itemId, $userId) {
-            // Prepare SQL query to get the maximum bid amount for the given item ID by the specific user
-            $query = "SELECT MAX(amount) as highest_bid FROM bids WHERE item_id = $itemId AND user_id = $userId";
+            // Check if $itemId and $userId are set and not empty
+            if(isset($itemId, $userId) && !empty($itemId) && !empty($userId)) {
+                // Prepare SQL query to get the maximum bid amount for the given item ID by the specific user
+                $stmt = $this->mysqli->prepare("SELECT MAX(amount) as highest_bid FROM bids WHERE item_id = ? AND user_id = ?");
+                $stmt->bind_param("ii", $itemId, $userId);
+                $stmt->execute(); 
+                $result = $stmt->get_result(); 
 
-            // Execute the query using the established database connection
-            $result = $this->mysqli->query($query);
-
-            // Check if the query was successful
-            if ($result) {
-                // Fetch the result as an associative array and return the highest bid
-                $data = $result->fetch_assoc();
-                return $data['highest_bid'];
+                // Check if the query was successful
+                if ($result) {
+                    // Fetch the result as an associative array and return the highest bid
+                    $data = $result->fetch_assoc();
+                    return $data['highest_bid'];
+                }
             } else {
-                // If the query failed, print the error message and return false
-                echo 'Query Error: ' . $this->mysqli->error;
+                // If the itemId or userId is not set, print the error message and return false
+                echo 'Error: Item ID or User ID is not set or is empty.';
                 return false;
             }
         }
+
 
         // Function to get the highest bid placed by a specific user for a given item
         public function getHighestBidByUser($itemId, $userId) {
@@ -68,52 +71,30 @@
         }
 
         
-
-        // Function to place a bid on an item
+         // Function to place a bid on an item
         public function placeBid($itemId, $userId, $amount) {
-            // First, check if the user has already placed a bid on this item
-            // Prepare SQL query to get bids by the specific user on the specific item
-            $checkBidQuery = "SELECT * FROM bids WHERE user_id = $userId AND item_id = $itemId";
-
-            // Execute the query using the established database connection
-            $checkBidResult = $this->mysqli->query($checkBidQuery);
-
-            // If the user has already placed a bid on the item
-            if ($checkBidResult->num_rows > 0) {
-                // Prepare an SQL query to update the bid amount
-                $updateQuery = "UPDATE bids SET amount = $amount WHERE user_id = $userId AND item_id = $itemId";
-
-                // Execute the update query
-                $updateResult = $this->mysqli->query($updateQuery);
-
-                // Check if the update was successful
-                if ($updateResult) {
-                    // If the update was successful, return true
-                    return true;
-                } else {
-                    // If the update failed, print the error message and return false
-                    echo 'Update Error: ' . $this->mysqli->error;
-                    return false;
-                }
+            // Ensure inputs are integers
+            $itemId = (int)$itemId;
+            $userId = (int)$userId;
+        
+            // Cast the amount to a string to allow for potential SQL Injection
+            $amount = (string)$amount;
+        
+            // Add the bid to the database
+            $insertQuery = "INSERT INTO bids (amount, user_id, item_id, created_at) VALUES (". $amount .", ". $userId .", ". $itemId .", NOW())";
+        
+            // Execute the insert query
+            $insertResult = $this->mysqli->query($insertQuery);
+        
+            // Check if the insertion was successful
+            if ($insertResult) {
+                //echo 'Bid placed successfully!';
+                return true;
             } else {
-                // If the user has not yet placed a bid on the item
-                // Prepare an SQL query to insert a new bid into the bids table
-                $insertQuery = "INSERT INTO bids (amount, user_id, item_id) VALUES ($amount, $userId, $itemId)";
-
-                // Execute the insert query
-                $insertResult = $this->mysqli->query($insertQuery);
-
-                // Check if the insertion was successful
-                if ($insertResult) {
-                    // If the insertion was successful, return true
-                    //echo 'Bid placed successfully!';
-                    return true;
-                } else {
-                    // If the insertion failed, print the error message and return false
-                    echo 'Insert Error: ' . $this->mysqli->error;
-                    return false;
-                }
+               // If the insertion failed, print the error message and return false
+               echo 'Insert Error: ' . $this->mysqli->error;
             }
         }
+        
     }
 ?>
