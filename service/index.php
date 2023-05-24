@@ -23,7 +23,7 @@ $item = new Item($con);
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 
 // Setting the number of items to be displayed per page
-$itemsPerPage = 5;
+$itemsPerPage = 4;
 
 // Getting the items for the current page
 $result = $item->getItems($page, $itemsPerPage);
