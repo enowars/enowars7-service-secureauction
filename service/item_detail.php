@@ -54,7 +54,7 @@ include("includes/header.php");
         
         echo '<form method="POST" action="place_bid.php">';
         echo '<input type="hidden" name="item_id" value="' . htmlspecialchars($item_id, ENT_QUOTES, 'UTF-8') . '">';
-        echo '<input type="number" name="bid_amount" placeholder="Your bid">';
+        echo '<input type="text" name="bid_amount" placeholder="Your bid">';
         echo '<button type="submit" class="btn btn-primary">Place Bid</button>';
         echo '</form>';
     } else {

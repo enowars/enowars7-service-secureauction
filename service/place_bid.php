@@ -23,7 +23,6 @@ if (!$user_data) {
 // Create an Item object
 $item = new Item($con);
 
-// TODO
 // Get the item ID from the POST data
 $item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
 
@@ -46,11 +45,11 @@ $highest_bid = $bid->getHighestBid($item_id);
 $current_user_highest_bid = $bid->getUserHighestBid($item_id, $user_data['user_id']);
 
 // Get the bid amount from the POST data
-$bid_amount = isset($_POST['bid_amount']) ? floatval($_POST['bid_amount']) : 0.0;
+$bid_amount = isset($_POST['bid_amount']) ? $_POST['bid_amount'] : '';
 
-// If the bid amount is less than the starting price, redirect back to the item details page
-if ($bid_amount < $item_details['start_price']) {
-    header("Location: item_detail.php?id=$item_id&error=low_bid");
+// If the bid amount is empty, redirect back to the item details page
+if (empty($bid_amount)) {
+    header("Location: item_detail.php?id=$item_id&error=empty_bid");
     exit;
 }
 

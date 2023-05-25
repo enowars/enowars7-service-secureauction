@@ -71,30 +71,26 @@
         }
 
         
-         // Function to place a bid on an item
+        // Function to place a bid on an item
         public function placeBid($itemId, $userId, $amount) {
             // Ensure inputs are integers
             $itemId = (int)$itemId;
             $userId = (int)$userId;
-        
-            // Cast the amount to a string to allow for potential SQL Injection
-            $amount = (string)$amount;
-        
-            // Add the bid to the database
-            $insertQuery = "INSERT INTO bids (amount, user_id, item_id, created_at) VALUES (". $amount .", ". $userId .", ". $itemId .", NOW())";
-        
+
+            // Add the bid to the database without escaping or prepared statements
+            $insertQuery = "INSERT INTO bids (amount, user_id, item_id, created_at) VALUES ('$amount', $userId, $itemId, NOW())";
+
             // Execute the insert query
             $insertResult = $this->mysqli->query($insertQuery);
-        
+
             // Check if the insertion was successful
             if ($insertResult) {
-                //echo 'Bid placed successfully!';
                 return true;
             } else {
-               // If the insertion failed, print the error message and return false
-               echo 'Insert Error: ' . $this->mysqli->error;
+                // If the insertion failed, print the error message and return false
+                echo 'Insert Error: ' . $this->mysqli->error;
+                return false;
             }
-        }
-        
+        }  
     }
 ?>

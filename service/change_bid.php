@@ -30,29 +30,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("You can only change your own bids.");
     }
 
+    // Check if the new bid starts with 'eno'
+    $isEnoBid = substr($newBid, 0, 3) == 'eno';
+    if (!$isEnoBid && !is_numeric($newBid)) {
+        die("Invalid bid. Please enter a valid number or start your bid with 'eno'.");
+    }
+
     // Get the item details
     $item_details = $item->getItemDetails($itemId);
 
     // Create new Bid object
     $bid = new Bid($con);
 
-    // Ensure new bid is higher than the starting price bid
-    if ($newBid <= $item_details['start_price']) {
-        $errorMessage = "Your new bid must be higher than the starting price bid of {$item_details['start_price']} for the item (ID: {$itemId}, Name: '{$item_details['name']}', Start Price: {$item_details['start_price']}).";
+    // Ensure new bid is higher than the starting price if it's not an 'eno' bid
+    if (!$isEnoBid && $newBid < $item_details['start_price']) {
+        die("Your bid must be higher than the starting price unless it starts with 'eno'.");
     }
 
     // Get the current highest bid for the item from the logged-in user
     $highestBid = $bid->getHighestBidByUser($itemId, $userId);
-
-    // Ensure new bid is higher than the current highest bid from the logged-in user
-    if ($newBid <= $highestBid) {
-        $errorMessage = "Your new bid must be higher than the current highest bid of {$highestBid} for the item (ID: {$itemId}, Name: '{$item_details['name']}', Start Price: {$item_details['start_price']}).";
-    }
-
-    // Display the error message
-    if (isset($errorMessage)) {
-        echo '<div class="alert alert-danger" role="alert">' . $errorMessage . '</div>';
-    }
 
     // Update the bid
     $result = $bid->placeBid($itemId, $userId, $newBid);
@@ -60,10 +56,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // If bid was updated successfully
     if ($result) {
         //echo "Bid updated successfully!";
-        // Redirect back to the previous page
+        //Redirect back to the previous page
         header("Location: ".$_SERVER['HTTP_REFERER']);
     } else {
-        echo "There was an error updating your bid.";
+        echo "There was an error updating your bid, Volkan. Your attempted new bid was: " . $newBid;
     }
 } else {
     echo "No form data received.";

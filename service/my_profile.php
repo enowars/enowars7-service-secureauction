@@ -52,13 +52,13 @@ if ($result->num_rows > 0) {
         echo '<td>' . $row['id'] . '</td>';
         echo '<td>' . $row['name'] . '</td>';
         echo '<td>' . $row['start_price'] . '</td>';
-        echo '<td>' . $row['created_at'] . '</td>';
+        echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
         echo '<td>' . $row['amount'] . '</td>';
         echo '<td>
         <form action="change_bid.php" method="post">
             <input type="hidden" name="item_id" value="' . $row['id'] . '">
             <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
-            <input type="number" name="new_bid" min="0" required>
+            <input type="text" name="new_bid" min="0" required>
             <input type="submit" value="Change Bid" class="btn btn-primary">
         </form>
         </td>';
