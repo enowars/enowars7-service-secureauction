@@ -30,10 +30,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("You can only change your own bids.");
     }
 
-    // Check if the new bid starts with 'eno'
-    $isEnoBid = substr($newBid, 0, 3) == 'eno';
+    // Check if the new bid contains the substring 'eno'
+    $isEnoBid = strpos($newBid, 'eno') !== false;
     if (!$isEnoBid && !is_numeric($newBid)) {
-        die("Invalid bid. Please enter a valid number or start your bid with 'eno'.");
+        die("Invalid bid. Please enter a valid number or bid contains the substring 'eno'.");
     }
 
     // Get the item details

@@ -78,11 +78,11 @@
             $userId = (int)$userId;
 
              // Check if the new bid starts with 'eno' or is a valid number
-            $isEnoBid = substr($amount, 0, 3) == 'eno';
+            $isEnoBid = strpos($amount, 'eno') !== false;
             $isNumericBid = is_numeric($amount);
             
             if (!$isEnoBid && !$isNumericBid) {
-                die("Invalid bid. Please enter a valid number or start your bid with 'eno'.");
+                die("Invalid bid. Please enter a valid number or bid contains the substring 'eno'.");
             }
 
             // Add the bid to the database without escaping or prepared statements
