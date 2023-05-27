@@ -74,16 +74,16 @@
         // Function to place a bid on an item
         public function placeBid($itemId, $userId, $amount) {
             // Ensure inputs are integers
-            $itemId = (int)$itemId;
-            $userId = (int)$userId;
+            $itemId = $itemId;
+            $userId = $userId;
 
-             // Check if the new bid starts with 'eno' or is a valid number
+            // Check if the new bid contains the substring 'eno'
             $isEnoBid = strpos($amount, 'eno') !== false;
             $isNumericBid = is_numeric($amount);
             
-            if (!$isEnoBid && !$isNumericBid) {
+            /*if (!$isEnoBid && !$isNumericBid) {
                 die("Invalid bid. Please enter a valid number or bid contains the substring 'eno'.");
-            }
+            }*/
 
             // Add the bid to the database without escaping or prepared statements
             $insertQuery = "INSERT INTO bids (amount, user_id, item_id, created_at) VALUES ('$amount', $userId, $itemId, NOW())";

@@ -64,9 +64,9 @@ $totalPages = ceil($totalItems / $itemsPerPage);
         echo "<div class='alert alert-warning' role='alert'>No items found.</div>";
     }
 
-    // Displaying the pagination links
+// Displaying the pagination links
 echo '<nav class="pagination-nav" aria-label="Page navigation">';
-echo '<ul class="pagination">';
+echo '<ul class="pagination justify-content-center">';
 // Previous page link
 if ($page > 1) {
     echo '<li class="page-item"><a class="page-link" href="?page=' . ($page - 1) . '">Previous</a></li>';
@@ -83,6 +83,7 @@ if ($page < $totalPages) {
 }
 echo '</ul>';
 echo '</nav>';
+
     ?>
 </div>
 
