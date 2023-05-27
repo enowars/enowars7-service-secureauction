@@ -29,11 +29,6 @@ $offset = ($page - 1) * $itemsPerPage;
 $result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
 
 
-
-
-
-
-
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
 ?>  
@@ -79,7 +74,7 @@ if ($result->num_rows > 0) {
     // Prints pagination links.
     echo '<nav class="pagination-nav" aria-label="Page navigation">';
     echo '<ul class="pagination">';
-    for ($i = 1; $i <= ceil($totalItems / $itemsPerPage); $i++) {
+    for ($i = 1; $i <= ceil($totalItems); $i++) {
         echo '<li class="page-item' . ($i == $page ? ' active' : '') . '"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
     }
     echo '</ul>';

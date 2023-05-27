@@ -1,6 +1,8 @@
 import requests
+from bs4 import BeautifulSoup
 
 BASE_URL = "http://localhost:8080"  # Base URL of the web application
+INDEX_URL = f"{BASE_URL}/index.php"  # URL of the index page
 
 # Function to sign up a new user
 def signup(user_name, password):
@@ -42,16 +44,14 @@ def create_item(cookie, item_name, start_price):
     if response.status_code == 200:
         print("Item created successfully.")
         return f"Item Name: {item_name}, Start Price: {start_price}"
-        #return response.text  # Return the response text, which contains the item information
     else:
         print("Failed to create the item.")
         return None
 
 
-
 def main():
     # Sign up a new user
-    user_name = "appuser_volkan2"
+    user_name = "appuser_root"
     password = "testpassword"
     signup(user_name, password)
 
@@ -67,6 +67,12 @@ def main():
         # Print the created item information
         print("Created Item Information:")
         print(item_detail)
+
+        # Get start prices with 'eno' or with 'eno' as a substring
+        print("Start Prices with 'eno' or with 'eno' as a substring:")
+        start_prices = get_start_prices_with_eno()
+        for price in start_prices:
+            print(price)
 
 if __name__ == "__main__":
     main()

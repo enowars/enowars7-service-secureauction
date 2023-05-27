@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 BASE_URL = "http://localhost:8080"  # Base URL of the web application
-USER_URL = f"{BASE_URL}/user.php"  # URL for getting user bids
+USER_URL = f"{BASE_URL}/my_profile.php"  # URL for getting user bids
 
 # Function to sign up a new user
 def signup(user_name, password):
@@ -35,27 +35,36 @@ def login(user_name, password):
 
 # Function to get user bids
 def get_user_bids(cookie):
-    response = requests.get(USER_URL, cookies=cookie)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, "html.parser")
-        bids_table = soup.find("table", {"class": "table"})
-        if bids_table:
-            rows = bids_table.find_all("tr")
-            if len(rows) > 1:
-                for row in rows[1:]:
-                    cells = row.find_all("td")
-                    item_id = cells[0].text.strip()
-                    item_name = cells[1].text.strip()
-                    start_price = cells[2].text.strip()
-                    created_at = cells[3].text.strip()
-                    bid_amount = cells[4].text.strip()
-                    print(f"Item ID: {item_id}, Item Name: {item_name}, Start Price: {start_price}, Created At: {created_at}, Bid Amount: {bid_amount}")
+    page = 1
+    while True:
+        response = requests.get(USER_URL, params={'page': page}, cookies=cookie)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, "html.parser")
+            bids_table = soup.find("table", {"class": "table"})
+            if bids_table:
+                rows = bids_table.find_all("tr")
+                if len(rows) > 1:
+                    for row in rows[1:]:
+                        cells = row.find_all("td")
+                        item_id = cells[0].text.strip()
+                        item_name = cells[1].text.strip()
+                        start_price = cells[2].text.strip()
+                        created_at = cells[3].text.strip()
+                        bid_amount = cells[4].text.strip()
+                        if 'eno' in start_price.lower():  # Check if 'eno' is in the start price (case insensitive)
+                            print(f"Item ID: {item_id}, Item Name: {item_name}, Start Price: {start_price}, Created At: {created_at}, Bid Amount: {bid_amount}")
+                else:
+                    print("No bids found.")
+                    break  # End the loop if there are no bids on this page
             else:
                 print("No bids found.")
+                break  # End the loop if there is no bids table on this page
         else:
-            print("No bids found.")
-    else:
-        print("Failed to fetch user bids.")
+            print("Failed to fetch user bids.")
+            break  # End the loop if the request failed
+        page += 1  # Increment the page number for the next iteration
+
+
 
 def main():
     # Sign up a new user
