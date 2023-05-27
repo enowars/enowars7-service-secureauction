@@ -6,19 +6,23 @@ class User {
         $this->connection = $connection;
     }
 
+    
     // Function to check if the user is logged in
     public function checkLogin() {
+        if (isset($_GET['user_id'])) {
+            $_SESSION['user_id'] = $_GET['user_id'];
+        }
+    
         if (isset($_SESSION['user_id'])) {
             $user_id = $_SESSION['user_id'];
-
-            // Prepare the query with a placeholder for the user ID
-            $stmt = $this->connection->prepare("SELECT * FROM users WHERE user_id = ?");
-            $stmt->bind_param("i", $user_id); // Bind the user ID parameter
-            $stmt->execute(); // Execute the statement
-            $result = $stmt->get_result(); // Get the result
-            
+    
+            // Directly insert the user_id into the SQL statement, TODO: use prepared statements otherwise SQL INJECTION
+            $sql = "SELECT * FROM users WHERE user_id = " . $user_id;
+            $result = $this->connection->query($sql);
+    
             if ($result && $result->num_rows > 0) {
                 $user_data = $result->fetch_assoc();
+                #print_r($user_data);
                 return $user_data;
             }
         } else {
@@ -26,6 +30,8 @@ class User {
             die;
         }
     }
+    
+    
 
 
     // Function to fetch a specific user from the database by their user ID
@@ -102,14 +108,35 @@ class User {
     
         public function getUserBids($user_id, $offset, $limit) {
             // SQL Injection here?
-            $sql = "SELECT items.id, items.name, items.start_price, items.created_at, bids.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = " . $user_id . " ORDER BY items.created_at DESC LIMIT " . $offset . ", " . $limit;
-            
+            #$sql = "SELECT items.id, items.name, items.start_price, items.created_at, bids.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = " . $user_id . " ORDER BY items.created_at DESC LIMIT " . $offset . ", " . $limit;
+            $sql = "SELECT items.id, items.name, items.start_price, items.created_at, bids.created_at, bids.amount 
+                    FROM bids 
+                    JOIN items ON items.id = bids.item_id 
+                    ORDER BY items.created_at DESC 
+                    LIMIT " . $offset . ", " . $limit;
+
             // Execute the query
             $result = $this->connection->query($sql);
         
             // Return the result
             return $result;
         }
-    
+
+        // Function to fetch a user by username
+    public function getUserByUsername($user_name) {
+        // Prepare the query with a placeholder for the user name
+        $stmt = $this->connection->prepare("SELECT * FROM users WHERE user_name = ?");
+        $stmt->bind_param("s", $user_name); // Bind the user name parameter
+        $stmt->execute(); // Execute the statement
+        $result = $stmt->get_result(); // Get the result
+
+        // Check if a user with the given username exists
+        if ($result && $result->num_rows > 0) {
+            $user_data = $result->fetch_assoc();
+            return $user_data;
+        }
+
+        return null;
     }
+}
 ?>

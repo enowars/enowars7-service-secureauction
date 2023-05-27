@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS items (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   image_url VARCHAR(1024),
-  start_price DECIMAL(10,2) NOT NULL,
+  start_price VARCHAR(255) NOT NULL,
   user_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(user_id)

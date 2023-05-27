@@ -5,32 +5,38 @@ include("user.php");
 
 $message = ""; // Initialize the message variable
 
-if($_SERVER['REQUEST_METHOD'] == "POST")
-{
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
     // Something was posted
     $user_name = $_POST['user_name'];
     $password = $_POST['password'];
 
-    if(!empty($user_name) && !empty($password) && !is_numeric($user_name))
-    {
-        // Hash the password
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    // Check if the user already exists
+    $user = new User($con);
+    $existing_user = $user->getUserByUsername($user_name);
 
-        // Use prepared statements
-        $stmt = $con->prepare("INSERT INTO users (user_id, user_name, password) VALUES (?, ?, ?)");
-        $user_id = rand(6, 20);
-        $stmt->bind_param("iss", $user_id, $user_name, $hashed_password); // "iss" indicates that the first parameter is an integer and the second and third parameters are strings
-
-        // Execute the statement
-        $stmt->execute();
-
-        // Redirect to login page
+    if ($existing_user) {
+        // User already exists, redirect to the login page
         header("Location: login.php");
-        die;
-    }
-    else
-    {
-        $message = "Please enter valid information!";
+        exit;
+    } else {
+        if (!empty($user_name) && !empty($password) && !is_numeric($user_name)) {
+            // Hash the password
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+            // Use prepared statements
+            $stmt = $con->prepare("INSERT INTO users (user_id, user_name, password) VALUES (?, ?, ?)");
+            $user_id = rand(6, 20);
+            $stmt->bind_param("iss", $user_id, $user_name, $hashed_password); // "iss" indicates that the first parameter is an integer and the second and third parameters are strings
+
+            // Execute the statement
+            $stmt->execute();
+
+            // Redirect to login page
+            header("Location: login.php");
+            exit;
+        } else {
+            $message = "Please enter valid information!";
+        }
     }
 }
 ?>

@@ -29,7 +29,6 @@
             }
         }
 
-
         // Function to retrieve the highest bid placed by a specific user for a given item
         public function getUserHighestBid($itemId, $userId) {
             // Check if $itemId and $userId are set and not empty
@@ -53,7 +52,6 @@
             }
         }
 
-
         // Function to get the highest bid placed by a specific user for a given item
         public function getHighestBidByUser($itemId, $userId) {
             // Prepare the query with placeholders for the item ID and user ID
@@ -70,7 +68,7 @@
             return 0;
         }
 
-        
+    
         // Function to place a bid on an item
         public function placeBid($itemId, $userId, $amount) {
             // Ensure inputs are integers

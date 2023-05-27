@@ -31,6 +31,9 @@ $result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
 
 
 
+
+
+
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
 ?>  

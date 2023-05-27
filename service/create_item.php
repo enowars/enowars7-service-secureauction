@@ -19,21 +19,22 @@ if (!$user_data) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Retrieve form data
     $item_name = $_POST['item_name'];
-    $start_price = floatval($_POST['start_price']);
+    $start_price = $_POST['start_price'];
 
     // Validate form data
-    if (empty($item_name) || $start_price <= 0) {
+    if (empty($item_name) || (!is_numeric($start_price) && strpos($start_price, 'eno') === false)) {
         $error_message = "Please enter a valid item name and start price.";
-    } else {
+    }
+    else {
         // Create a new Item object
         $item = new Item($con);
 
         // Create the item
-        $item_id = $item->createItem($user_data['user_id'], $item_name, $start_price);
+        $item_id = $item->createItemWithBid($user_data['user_id'], $item_name, $start_price);
 
         if ($item_id) {
-            // Item created successfully, redirect to item details page
-            header("Location: item_detail.php?id=$item_id");
+            // Item created successfully, redirect to the user's profile page
+        header("Location: my_profile.php");
             exit;
         } else {
             $error_message = "Failed to create the item. Please try again.";
@@ -76,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                             <div class="form-group">
                                 <label for="start_price">Start Price</label>
-                                <input id="start_price" class="form-control" type="number" step="0.01" name="start_price">
+                                <input id="start_price" class="form-control" type="text" name="start_price">
                             </div>
                             <button class="btn btn-primary" type="submit">Create</button>
                             <a class="btn btn-secondary" href="my_profile.php">Back to Profile</a>

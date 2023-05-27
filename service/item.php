@@ -11,23 +11,40 @@
         }
 
         // Define a method to create a new item in the database
-        public function createItem($userId, $itemName, $startPrice) {
+        public function createItemWithBid($userId, $itemName, $bidAmount) {
             // Prepare the SQL statement to insert a new item
             $stmt = $this->mysqli->prepare("INSERT INTO items (user_id, name, start_price) VALUES (?, ?, ?)");
-        
+            
             // Bind the variables to the statement as parameters
-            $stmt->bind_param("isd", $userId, $itemName, $startPrice);
+            $stmt->bind_param("iss", $userId, $itemName, $bidAmount);
         
             // Execute the statement
             $result = $stmt->execute();
         
             // If the query was successful, return the ID of the newly created item. Otherwise, return false.
             if ($result) {
-                return $this->mysqli->insert_id;
+                $itemId = $this->mysqli->insert_id;
+        
+                // Place a bid on the item using the bidAmount
+                $bidStmt = $this->mysqli->prepare("INSERT INTO bids (item_id, user_id, amount) VALUES (?, ?, ?)");
+                $bidStmt->bind_param("iii", $itemId, $userId, $bidAmount);
+                $bidResult = $bidStmt->execute();
+        
+                if ($bidResult) {
+                    return $itemId;
+                } else {
+                    // Failed to place bid, rollback the item creation
+                    $deleteStmt = $this->mysqli->prepare("DELETE FROM items WHERE id = ?");
+                    $deleteStmt->bind_param("i", $itemId);
+                    $deleteStmt->execute();
+        
+                    return false;
+                }
             } else {
                 return false;
             }
         }
+        
         
 
         // Define a method to get a page of items from the database
