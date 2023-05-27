@@ -101,7 +101,7 @@ class User {
         }
     
         public function getUserBids($user_id, $offset, $limit) {
-            // Directly concatenate the user inputs into the SQL query
+            // SQL Injection here?
             $sql = "SELECT items.id, items.name, items.start_price, items.created_at, bids.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = " . $user_id . " ORDER BY items.created_at DESC LIMIT " . $offset . ", " . $limit;
             
             // Execute the query
