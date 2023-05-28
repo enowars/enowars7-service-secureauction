@@ -61,7 +61,7 @@ def main():
     if cookie:
         # Create an item
         item_name = "ZZZ"
-        start_price = "eno6464646volkan"
+        start_price = "eno6464646sveva"
         item_detail = create_item(cookie, item_name, start_price)
 
         # Print the created item information
