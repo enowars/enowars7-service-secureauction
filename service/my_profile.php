@@ -34,7 +34,8 @@ $totalItems = $user->getUserBidsCount($user_data['user_id']);
 ?>  
 
 <div class="container">
-    <h1 class="mt-4 mb-4">Logged in as <?= $user_data['user_name'] ?></h1>
+    <h1 class="mt-4 mb-4">Logged in as <?= $user_data['user_id'] ?> - <?= $user_data['user_name'] ?></h1>
+
 
     <?php
     // If the user has placed bids on items, it displays them in a table.
@@ -71,7 +72,7 @@ if ($result->num_rows > 0) {
     }
 
 
-    // Prints pagination links.
+    // Prints pagination links. TODO, the ceil function
     echo '<nav class="pagination-nav" aria-label="Page navigation">';
     echo '<ul class="pagination">';
     for ($i = 1; $i <= ceil($totalItems); $i++) {

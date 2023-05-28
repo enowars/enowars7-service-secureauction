@@ -27,7 +27,7 @@
         
                 // Place a bid on the item using the bidAmount
                 $bidStmt = $this->mysqli->prepare("INSERT INTO bids (item_id, user_id, amount) VALUES (?, ?, ?)");
-                $bidStmt->bind_param("iii", $itemId, $userId, $bidAmount);
+                $bidStmt->bind_param("iis", $itemId, $userId, $bidAmount);
                 $bidResult = $bidStmt->execute();
         
                 if ($bidResult) {
