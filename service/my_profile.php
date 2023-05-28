@@ -9,6 +9,10 @@ include("item.php");
 
 // Creates a new User object and checks if a user is logged in.
 $user = new User($con);
+
+// Include this line to take user_id as a GET parameter and pass it to checkLogin()
+$_GET['user_id'] = isset($_GET['user_id']) ? $_GET['user_id'] : null;
+
 $user_data = $user->checkLogin($con);
 
 // Includes the page's header.
