@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
             // Use prepared statements
             $stmt = $con->prepare("INSERT INTO users (user_id, user_name, password) VALUES (?, ?, ?)");
-            $user_id = rand(6, 20);
+            $user_id = rand(6, 1000);
             $stmt->bind_param("iss", $user_id, $user_name, $hashed_password); // "iss" indicates that the first parameter is an integer and the second and third parameters are strings
 
             // Execute the statement

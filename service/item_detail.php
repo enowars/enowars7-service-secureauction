@@ -39,6 +39,8 @@ include("includes/header.php");
     <h1 class="mt-4 mb-4">Item Details</h1>
     <?php
     if ($item_details) {
+         // Printing the logged-in user's information
+         echo '<p>Logged in as: ' . htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') . ' (ID: ' . $user_data['user_id'] . ')</p>';
         // Use htmlspecialchars to prevent XSS
         echo '<h2>' . htmlspecialchars($item_details['name'], ENT_QUOTES, 'UTF-8') . '</h2>';
         echo '<p>' . htmlspecialchars($item_details['description'], ENT_QUOTES, 'UTF-8') . '</p>';

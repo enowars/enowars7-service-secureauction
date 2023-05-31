@@ -83,9 +83,6 @@
                 die("Invalid bid. Please enter a valid number or bid contains the substring 'eno'.");
             }
 
-             // Print the bid amount for debugging
-            #var_dump($amount);
-
             // Add the bid to the database without escaping or prepared statements
             $insertQuery = "INSERT INTO bids (amount, user_id, item_id, created_at) VALUES ('$amount', $userId, $itemId, NOW())";
 

@@ -18,17 +18,19 @@ $user_data = $user->checkLogin($con);
 // Includes the page's header.
 include("includes/header.php");
 
+
 // Gets the current page number from the query string, or defaults to 1 if it's not set.
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 
 // Sets the desired number of items to display per page.
-$itemsPerPage = 3;
+$itemsPerPage =10;
 
 // Calculate the offset for the SQL query
 $offset = ($page - 1) * $itemsPerPage;
 
-// Get the items that the user has placed bids on.
-$result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
+// Get the items that the user has placed bids on. Making SQL Injection posssible.
+$result = $user->getUserBids($_SESSION['user_id'], $offset, $itemsPerPage);
+#$result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
 
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
@@ -36,8 +38,12 @@ $totalItems = $user->getUserBidsCount($user_data['user_id']);
 // Calculate total pages
 $totalPages = ceil($totalItems / $itemsPerPage);
 ?> <div class="container">
-    <h1 class="mt-4 mb-4">Logged in as <?= $user_data['user_id'] ?> - <?= $user_data['user_name'] ?></h1> <?php
-    if ($result->num_rows > 0) {
+    <h1 class="mt-4 mb-4">
+    Welcome, <?= $user_data['user_name'] ?>
+    ID: <?= $user_data['user_id'] ?>
+    </h1>
+        
+<?php if ($result->num_rows > 0) {
         echo '<table class="table table-striped">';
         echo '<thead>';
         echo '<tr><th scope="col">Item ID</th><th scope="col">Item Name</th><th scope="col">Start Price</th><th scope="col">Created At</th><th scope="col">Bid Amount</th></tr>';

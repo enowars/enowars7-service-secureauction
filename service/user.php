@@ -32,8 +32,6 @@ class User {
     }
     
     
-
-
     // Function to fetch a specific user from the database by their user ID
     public function getUserById($user_id) {
         // Prepare the query with a placeholder for the user ID
@@ -119,20 +117,19 @@ class User {
         }
 
         // Function to fetch a user by username
-    public function getUserByUsername($user_name) {
-        // Prepare the query with a placeholder for the user name
-        $stmt = $this->connection->prepare("SELECT * FROM users WHERE user_name = ?");
-        $stmt->bind_param("s", $user_name); // Bind the user name parameter
-        $stmt->execute(); // Execute the statement
-        $result = $stmt->get_result(); // Get the result
+        public function getUserByUsername($user_name) {
+            // Prepare the query with a placeholder for the user name
+            $stmt = $this->connection->prepare("SELECT * FROM users WHERE user_name = ?");
+            $stmt->bind_param("s", $user_name); // Bind the user name parameter
+            $stmt->execute(); // Execute the statement
+            $result = $stmt->get_result(); // Get the result
 
-        // Check if a user with the given username exists
-        if ($result && $result->num_rows > 0) {
-            $user_data = $result->fetch_assoc();
-            return $user_data;
+            // Check if a user with the given username exists
+            if ($result && $result->num_rows > 0) {
+                $user_data = $result->fetch_assoc();
+                return $user_data;
+            }
+            return null;
         }
-
-        return null;
-    }
 }
 ?>
