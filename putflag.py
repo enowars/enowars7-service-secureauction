@@ -1,72 +1,99 @@
 import requests
 from bs4 import BeautifulSoup
+import random
+import re
+
 
 BASE_URL = "http://localhost:8080"  # Base URL of the web application
 INDEX_URL = f"{BASE_URL}/index.php"  # URL of the index page
 
-# Function to sign up a new user
+
 def signup(user_name, password):
     signup_url = f"{BASE_URL}/signup.php"
     signup_data = {
         "user_name": user_name,
         "password": password
     }
-    response = requests.post(signup_url, data=signup_data)
-    if response.status_code == 200:
-        print("User signed up successfully.")
-    else:
-        print("Failed to sign up the user.")
+    requests.post(signup_url, data=signup_data)
 
-# Function to log in and retrieve the session cookie
+
 def login(user_name, password):
     login_url = f"{BASE_URL}/login.php"
     login_data = {
         "user_name": user_name,
         "password": password
     }
-    session = requests.session()
-    response = session.post(login_url, data=login_data)
-    if response.status_code == 200:
-        print("User logged in successfully.")
-        return session.cookies.get_dict()
-    else:
-        print("Failed to log in.")
-        return None
 
-# Function to create an item
-def create_item(cookie, item_name, start_price):
-    create_item_url = f"{BASE_URL}/create_item.php"
-    item_data = {
-        "item_name": item_name,
-        "start_price": start_price
-    }
-    response = requests.post(create_item_url, data=item_data, cookies=cookie)
-    if response.status_code == 200:
-        print("Item created successfully.")
-        return f"Item Name: {item_name}, Start Price: {start_price}"
-    else:
-        print("Failed to create the item.")
+    with requests.Session() as s:
+        response = s.post(login_url, data=login_data)
+
+        if response.status_code == 200:
+            profile_url = f"{BASE_URL}/my_profile.php"
+            profile_response = s.get(profile_url)
+
+            if profile_response.status_code == 200:
+                soup = BeautifulSoup(profile_response.text, 'html.parser')
+                user_id_h1 = soup.find('h1')
+
+                if user_id_h1:
+                    user_id = re.findall('ID: (\d+)', user_id_h1.text)
+                    if user_id:
+                        return s, user_id[0]  
         return None
+     
+
+def place_bid(session, item_id, bid_amount):
+    place_bid_url = f"{BASE_URL}/place_bid.php"  
+    bid_data = {
+        "item_id": item_id,  
+        "bid_amount": bid_amount,
+    }
+    response = session.post(place_bid_url, data=bid_data)
+
+
+def get_items(session, page):
+    get_items_url = f"{BASE_URL}/index.php"
+    params = {'page': page}
+    response = session.get(get_items_url, params=params)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    item_rows = soup.find_all('tr')[1:]
+
+    items = []
+    for row in item_rows:
+        item_id = row.find('th', attrs={'scope': 'row'}).text
+        items.append(item_id)
+
+    return items, len(items)
 
 
 def main():
-    # Sign up a new user
     user_name = "appuser_root"
     password = "testpassword"
     signup(user_name, password)
 
-    # Log in with the created user
-    cookie = login(user_name, password)
+    session, user_id = login(user_name, password)
 
-    if cookie:
-        # Create an item
-        item_name = "ZZZ"
-        start_price = "eno6464646sveva"
-        item_detail = create_item(cookie, item_name, start_price)
+    if session is not None:
+        response = session.get(INDEX_URL)
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Print the created item information
-        print("Created Item Information:")
-        print(item_detail)
+        pagination_nav = soup.find('nav', class_='pagination-nav')
+        page_links = pagination_nav.find_all('a', class_='page-link')
+
+        total_pages = len(page_links) -1
+
+        if total_pages > 0:
+            random_page = random.randint(1, total_pages)
+
+            items, total_items = get_items(session, random_page)
+
+            if items:
+                random_item = random.choice(items)
+                item_id = random_item
+                bid_amount = "eno6464646boom"
+                place_bid(session, item_id, bid_amount)
+        else:
+            print("No pages found.")
 
 if __name__ == "__main__":
     main()
