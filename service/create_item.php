@@ -22,24 +22,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $start_price = $_POST['start_price'];
 
     // Validate form data
-    if (empty($item_name) || (!is_numeric($start_price) && strpos($start_price, 'eno') === false)) {
-        $error_message = "Please enter a valid item name and start price.";
-    }
-    else {
-        // Create a new Item object
-        $item = new Item($con);
+    // if (empty($item_name) || (!is_numeric($start_price) && strpos($start_price, 'eno') === false)) {
+    //     $error_message = "Please enter a valid item name and start price.";
+    // }
+    // else {
+    //     // Create a new Item object
+    //     $item = new Item($con);
 
-        // Create the item
-        $item_id = $item->createItemWithBid($user_data['user_id'], $item_name, $start_price);
+    //     // Create the item
+    //     $item_id = $item->createItemWithBid($user_data['user_id'], $item_name, $start_price);
 
-        if ($item_id) {
-            // Item created successfully, redirect to the user's profile page
-        header("Location: my_profile.php");
-            exit;
-        } else {
-            $error_message = "Failed to create the item. Please try again.";
-        }
-    }
+    //     if ($item_id) {
+    //         // Item created successfully, redirect to the user's profile page
+    //     header("Location: my_profile.php");
+    //         exit;
+    //     } else {
+    //         $error_message = "Failed to create the item. Please try again.";
+    //     }
+    // }
+    // Create a new Item object
+    $item = new Item($con);
+    // Create the item
+    $item_id = $item->createItemWithBid($user_data['user_id'], $item_name, $start_price);
 }
 ?>
 
