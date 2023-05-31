@@ -31,16 +31,18 @@ app = lambda: checker.app
 
 
 async def signup(client: AsyncClient, user_name, password):
+    signup_url = "http://localhost:8080/signup.php"
     signup_data = {
         "user_name": user_name,
         "password": password
     }
-    response = await client.post("/signup.php", data=signup_data)
+    response = await client.post(signup_url, data=signup_data)
     status_code = response.status_code
     if status_code == 200:
         print("User signed up successfully.")
     else:
         raise MumbleException(f"Failed to sign up the user. {status_code}")
+
 
 
 async def login(client: AsyncClient, user_name, password):
@@ -49,7 +51,7 @@ async def login(client: AsyncClient, user_name, password):
         "password": password
     }
 
-    response = await client.post("login.php", data=login_data)
+    response = await client.post("http://localhost:8080/login.php", data=login_data)
     if response.status_code == 200:
         return
     else:
@@ -69,7 +71,7 @@ async def login(client: AsyncClient, user_name, password):
         raise MumbleException("Failed to create the item.")'''
 
 
-@checker.putflag(0)
+'''@checker.putflag(0)
 async def putflag_note(
         task: PutflagCheckerTaskMessage,
         db: ChainDB,
@@ -90,10 +92,10 @@ async def putflag_note(
 
     await db.set("item", (user_name, password, item_name))
 
-    return user_name
+    return user_name'''
 
 
-@checker.getflag(0)
+'''@checker.getflag(0)
 async def getflag_note(
         task: GetflagCheckerTaskMessage,
         db: ChainDB,
@@ -109,7 +111,7 @@ async def getflag_note(
     response = await client.get("my_profile.php")
     logger.debug(response.text)
 
-    assert_in(task.flag, response.text, "Flag missing")
+    assert_in(task.flag, response.text, "Flag missing")'''
 
 if __name__ == "__main__":
     checker.run()

@@ -23,7 +23,7 @@ include("includes/header.php");
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 
 // Sets the desired number of items to display per page.
-$itemsPerPage =10;
+$itemsPerPage =5;
 
 // Calculate the offset for the SQL query
 $offset = ($page - 1) * $itemsPerPage;
