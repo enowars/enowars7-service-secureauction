@@ -32,8 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $stmt->execute();
 
             // Redirect to login page
-            header("Location: login.php");
-            exit;
+            #header("Location: login.php");
+            #exit;
         } else {
             $message = "Please enter valid information!";
         }

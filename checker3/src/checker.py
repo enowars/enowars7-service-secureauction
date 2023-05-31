@@ -6,6 +6,7 @@ import faker
 from httpx import AsyncClient, Response
 from typing import Optional
 from logging import LoggerAdapter
+from bs4 import BeautifulSoup
 
 from enochecker3 import (
     ChainDB,
@@ -29,6 +30,9 @@ from enochecker3.utils import assert_equals, assert_in
 checker = Enochecker("secureauction", 8080)
 app = lambda: checker.app
 
+BASE_URL = "http://localhost:8080"  # Base URL of the web application
+INDEX_URL = f"{BASE_URL}/index.php"  # URL of the index page
+
 
 async def signup(client: AsyncClient, user_name, password):
     signup_url = "http://localhost:8080/signup.php"
@@ -37,12 +41,23 @@ async def signup(client: AsyncClient, user_name, password):
         "password": password
     }
     response = await client.post(signup_url, data=signup_data)
+    
     status_code = response.status_code
+    print(f"Signup response status code: {status_code}")
+    
     if status_code == 200:
         print("User signed up successfully.")
+    elif status_code == 302:
+        redirect_url = response.headers.get('Location')
+        if redirect_url:
+            response = await client.get(redirect_url)
+            if response.status_code != 200:
+                raise MumbleException(f"Failed to follow the redirect. {response.status_code}")
+            print("User signed up successfully and followed the redirect.")
+        else:
+            raise MumbleException(f"Failed to sign up the user. {status_code}")
     else:
         raise MumbleException(f"Failed to sign up the user. {status_code}")
-
 
 
 async def login(client: AsyncClient, user_name, password):
@@ -52,26 +67,45 @@ async def login(client: AsyncClient, user_name, password):
     }
 
     response = await client.post("http://localhost:8080/login.php", data=login_data)
+    print(f"Login response status code: {response.status_code}")
+    
     if response.status_code == 200:
-        return
+        print(f"User {user_name} logged in successfully.")
     else:
         raise MumbleException("Failed to log in.")
 
 
-'''async def create_item(client: AsyncClient, item_name, start_price):
-    item_data = {
-        "item_name": item_name,
-        "start_price": start_price
+async def place_bid(client: AsyncClient, item_id: str, bid_amount: str):
+    place_bid_url = f"{BASE_URL}/place_bid.php"  
+    bid_data = {
+        "item_id": item_id,  
+        "bid_amount": bid_amount,
     }
-    response = await client.post("create_item.php", data=item_data)
+    response = await client.post(place_bid_url, data=bid_data)
+    print(f"Place bid response status code: {response.status_code}")
     if response.status_code == 200:
-        print("Item created successfully.")
-        return
+        print(f"Bid placed successfully for item_id: {item_id} with amount: {bid_amount}")
     else:
-        raise MumbleException("Failed to create the item.")'''
+        print("Failed to place bid.")
 
 
-'''@checker.putflag(0)
+async def get_items(client: AsyncClient, page: int):
+    get_items_url = f"{BASE_URL}/index.php"
+    params = {'page': page}
+    response = await client.get(get_items_url, params=params)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    item_rows = soup.find_all('tr')[1:]
+
+    items = []
+    for row in item_rows:
+        item_id = row.find('th', attrs={'scope': 'row'}).text
+        items.append(item_id)
+    print(f"Items fetched: {items}")
+
+    return items, len(items)
+
+
+@checker.putflag(0)
 async def putflag_note(
         task: PutflagCheckerTaskMessage,
         db: ChainDB,
@@ -80,19 +114,37 @@ async def putflag_note(
 ) -> None:
     user_name = ''.join(random.choices(string.ascii_lowercase, k=10))
     password = ''.join(random.choices(string.ascii_lowercase, k=10))
-    logger.debug(user_name)
-    logger.debug(password)
+    print(f"Generated user_name: {user_name}")
+    print(f"Generated password: {password}")
     await signup(client, user_name, password)
-    await login(client, user_name, password)
+    user_id = await login(client, user_name, password)
+    
+    if user_id is not None:
+        response = await client.get(INDEX_URL)
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-    item_name = "ZZZ"
+        pagination_nav = soup.find('nav', class_='pagination-nav')
+        page_links = pagination_nav.find_all('a', class_='page-link')
 
-    start_price = task.flag
-    #item_detail = create_item(client, item_name, start_price)
+        total_pages = len(page_links) - 1
+        print(f"Total number of pages: {total_pages}")
 
-    await db.set("item", (user_name, password, item_name))
+        if total_pages > 0:
+            random_page = random.randint(1, total_pages)
+            print(f"Randomly selected page: {random_page}")
 
-    return user_name'''
+            items, total_items = await get_items(client, random_page)
+            print(f"Total items on selected page: {total_items}")
+
+            if items:
+                random_item = random.choice(items)
+                item_id = random_item
+                bid_amount = task.flag
+                print(f"Placing bid for item: {item_id} with bid amount: {bid_amount}")
+                await place_bid(client, item_id, bid_amount)
+    
+    return user_name
+
 
 
 '''@checker.getflag(0)
