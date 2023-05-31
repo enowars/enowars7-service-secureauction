@@ -30,3 +30,12 @@ services:
       - PMA_HOST=db
       - PMA_PORT=3306
 
+  checker: # New checker service
+    build:
+      context: .
+      dockerfile: Dockerfile.checker
+    volumes:
+      - ".:/app"
+    ports:
+      - "5008:5008"
+
