@@ -56,7 +56,7 @@ async def login(client: AsyncClient, user_name, password):
         raise MumbleException("Failed to log in.")
 
 
-async def create_item(client: AsyncClient, item_name, start_price):
+'''async def create_item(client: AsyncClient, item_name, start_price):
     item_data = {
         "item_name": item_name,
         "start_price": start_price
@@ -66,7 +66,7 @@ async def create_item(client: AsyncClient, item_name, start_price):
         print("Item created successfully.")
         return
     else:
-        raise MumbleException("Failed to create the item.")
+        raise MumbleException("Failed to create the item.")'''
 
 
 @checker.putflag(0)
@@ -86,7 +86,7 @@ async def putflag_note(
     item_name = "ZZZ"
 
     start_price = task.flag
-    item_detail = create_item(client, item_name, start_price)
+    #item_detail = create_item(client, item_name, start_price)
 
     await db.set("item", (user_name, password, item_name))
 
@@ -111,6 +111,5 @@ async def getflag_note(
 
     assert_in(task.flag, response.text, "Flag missing")
 
-
-if _name_ == "_main_":
-    checker.run()
+if __name__ == "__main__":
+    checker.run()
