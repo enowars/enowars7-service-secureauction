@@ -38,7 +38,7 @@ async def signup(client: AsyncClient, user_name, password):
     response = await client.post("/signup.php", data=signup_data)
     status_code = response.status_code
     if status_code == 200:
-        print("User signed up successfully.")
+        return
     else:
         raise MumbleException(f"Failed to sign up the user. {status_code}")
 
@@ -49,21 +49,29 @@ async def login(client: AsyncClient, user_name, password):
         "password": password
     }
 
-    response = await client.post("login.php", data=login_data)
-    if response.status_code == 200:
-        return
-    else:
-        raise MumbleException("Failed to log in.")
+    await client.post("login.php", data=login_data)
 
 
-async def create_item(client: AsyncClient, item_name, start_price):
+async def create_item(client: AsyncClient, item_name, start_price) -> int:
     item_data = {
         "item_name": item_name,
         "start_price": start_price
     }
     response = await client.post("create_item.php", data=item_data)
-    if response.status_code == 200:
-        print("Item created successfully.")
+    if response.status_code == 302:
+        redirect_uri = response.headers['Location']
+        return int(redirect_uri[redirect_uri.index("=") + 1:])
+    else:
+        raise MumbleException("Failed to create the item.")
+
+
+async def place_bid(client: AsyncClient, item_id, bid):
+    item_data = {
+        "item_id": item_id,
+        "bid_amount": bid
+    }
+    response = await client.post("place_bid.php", data=item_data)
+    if response.status_code == 302:
         return
     else:
         raise MumbleException("Failed to create the item.")
@@ -75,18 +83,17 @@ async def putflag_note(
         db: ChainDB,
         client: AsyncClient,
         logger: LoggerAdapter,
-) -> None:
+) -> str:
     user_name = ''.join(random.choices(string.ascii_lowercase, k=10))
     password = ''.join(random.choices(string.ascii_lowercase, k=10))
-    logger.debug(user_name)
-    logger.debug(password)
+
     await signup(client, user_name, password)
     await login(client, user_name, password)
 
-    item_name = "ZZZ"
+    item_name = ''.join(random.choices(string.ascii_lowercase, k=10))
 
-    start_price = task.flag
-    item_detail = create_item(client, item_name, start_price)
+    item_id = await create_item(client, item_name, 0)
+    await place_bid(client, item_id, task.flag)
 
     await db.set("item", (user_name, password, item_name))
 
@@ -112,5 +119,5 @@ async def getflag_note(
     assert_in(task.flag, response.text, "Flag missing")
 
 
-if _name_ == "_main_":
-    checker.run()
+if __name__ == "main":
+    checker.run()
