@@ -1,6 +1,0 @@
-enochecker3==0.8.1
-uvicorn
-gunicorn
-faker
-httpx
-enochecker_test
