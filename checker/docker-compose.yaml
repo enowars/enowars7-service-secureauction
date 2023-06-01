@@ -29,8 +29,8 @@ services:
     volumes:
       - ./data:/data/db
     environment:
-      MONGO_INITDB_ROOT_USERNAME: n0t3b00k_checker
-      MONGO_INITDB_ROOT_PASSWORD: n0t3n0t3b00k_checkerb00k
+      MONGO_INITDB_ROOT_USERNAME: n0t3b00k
+      MONGO_INITDB_ROOT_PASSWORD: n0t3b00k
     mem_limit: 1G
     memswap_limit: 2G
     ulimits:
