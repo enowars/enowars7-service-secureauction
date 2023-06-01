@@ -150,19 +150,17 @@ async def exploit(
     response = await client.get(exploit_url)
 
     logger.debug(f"Exploit response status code: {response.status_code}")
-    logger.debug(f"Exploit response text: {response.text}")
 
     if response.status_code == 200:
         # look for the flag directly
-        if task.flag in response.text:
-            return task.flag
+        if flag := searcher.search_flag(response.text):
+            return flag
+
         else:
             logger.warning("Flag not found in the response.")
     else:
         logger.warning("Exploit request failed.")
         raise MumbleException("Exploit Failed!")
-
-
 
 
 if __name__ == "main":
