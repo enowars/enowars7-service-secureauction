@@ -81,8 +81,9 @@ nav ul li a, footer ul li a {
   text-align: center;
 }
 
+
 footer {
-  position: absolute;
+  position: fixed!important;
   bottom: 0;
 }
 

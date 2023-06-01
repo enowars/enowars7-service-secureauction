@@ -6,6 +6,7 @@ session_start();
 include("config.php");
 include("user.php");
 include("item.php");
+include("bid.php");
 
 // Creates a new User object and checks if a user is logged in.
 $user = new User($con);
@@ -22,8 +23,16 @@ include("includes/header.php");
 // Gets the current page number from the query string, or defaults to 1 if it's not set.
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 
+// solve pagination issue, get total bids
+if (isset($con) && $con) {
+    $totalBids = getTotalBids($con);
+} else {
+    echo "No database connection";
+}
+
+
 // Sets the desired number of items to display per page.
-$itemsPerPage =5;
+$itemsPerPage = $totalBids;
 
 // Calculate the offset for the SQL query
 $offset = ($page - 1) * $itemsPerPage;
@@ -31,6 +40,7 @@ $offset = ($page - 1) * $itemsPerPage;
 // Get the items that the user has placed bids on. Making SQL Injection posssible.
 $result = $user->getUserBids($_SESSION['user_id'], $offset, $itemsPerPage);
 #$result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
+
 
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);

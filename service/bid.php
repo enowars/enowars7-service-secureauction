@@ -68,7 +68,9 @@
             return 0;
         }
 
-    
+       
+        
+
         // Function to place a bid on an item
         public function placeBid($itemId, $userId, $amount) {
             // Ensure inputs are integers
@@ -98,5 +100,23 @@
                 return false;
             }
         }  
+    }
+
+     // get total bis in the database for resolving pagination issue, from bids table not for a specific user
+     function getTotalBids($mysqli){
+        $stmt = $mysqli->prepare("SELECT COUNT(*) as total_bids FROM bids");
+        $stmt->execute(); 
+        $result = $stmt->get_result(); 
+    
+        // Check if the query was successful
+        if ($result) {
+            // Fetch the result as an associative array and return the highest bid
+            $data = $result->fetch_assoc();
+            return $data['total_bids'];
+        } else {
+            // If the query failed, print the error message and return false
+            echo 'Query Error: ' . $mysqli->error;
+            return false;
+        }
     }
 ?>
