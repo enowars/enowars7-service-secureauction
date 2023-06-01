@@ -26,7 +26,7 @@ from enochecker3 import (
 )
 from enochecker3.utils import assert_equals, assert_in
 
-checker = Enochecker("secureauction", 8080)
+checker = Enochecker("secureauction", 8181)
 app = lambda: checker.app
 
 
