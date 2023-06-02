@@ -13,9 +13,10 @@
     <nav>
         <h2> CTF-SERVICE</h2>
         <ul>
-            <li><a href="index.php">Home<a></li>
+            <li><a href="user_index.php">Home<a></li>
             <li><a href="my_profile.php">My Profile<a></li>
             <li><a href="create_item.php">Create Item</a></li> 
+            <li><a href="#">Premium User</a></li> 
             <li><a href="logout.php">Logout<a></li>
         </ul>
     </nav>

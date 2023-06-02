@@ -46,6 +46,32 @@ CREATE TABLE IF NOT EXISTS auctions (
 );
 
 
+CREATE TABLE IF NOT EXISTS premium_users (
+  user_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_name  VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  rsa_pub_key VARCHAR(1024),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_user_name (user_name),
+  INDEX idx_password (password)
+);
+
+
+CREATE TABLE IF NOT EXISTS special_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  image_url VARCHAR(1024),
+  start_price VARCHAR(255) NOT NULL,
+  encrypted_bid VARCHAR(255) NOT NULL,
+  rsa_pub_key VARCHAR(255) NOT NULL,
+  premium_user_id INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (premium_user_id) REFERENCES premium_users(user_id)
+);
+
+
+
 
 -- Insert data
 -- Users

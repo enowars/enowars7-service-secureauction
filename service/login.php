@@ -33,7 +33,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
                 if (password_verify($password, $user_data['password'])) {
                     // Password is correct, set user_id session and redirect to index.php
                     $_SESSION['user_id'] = $user_data['user_id'];
-                    header("Location: index.php");
+                    header("Location: user_index.php");
                     die;
                 } else {
                     $message = "Incorrect password.";
