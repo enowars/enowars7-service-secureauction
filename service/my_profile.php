@@ -39,6 +39,7 @@ $offset = ($page - 1) * $itemsPerPage;
 
 // Get the items that the user has placed bids on. Making SQL Injection posssible.
 $result = $user->getUserBids($_SESSION['user_id'], $offset, $itemsPerPage);
+// SQL Injection is not possible.
 #$result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
 
 

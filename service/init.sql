@@ -48,13 +48,15 @@ CREATE TABLE IF NOT EXISTS auctions (
 
 CREATE TABLE IF NOT EXISTS premium_users (
   user_id INT AUTO_INCREMENT PRIMARY KEY,
-  user_name  VARCHAR(255) NOT NULL UNIQUE,
+  user_name VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  rsa_pub_key VARCHAR(1024),
+  public_key_e VARCHAR(512),
+  public_key_n VARCHAR(512),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_user_name (user_name),
   INDEX idx_password (password)
 );
+
 
 
 CREATE TABLE IF NOT EXISTS special_items (

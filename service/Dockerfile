@@ -10,6 +10,11 @@ RUN apt-get update && \
     apt-get install -y default-mysql-client && \
     rm -rf /var/lib/apt/lists/*
 
+# Install the GMP library
+RUN apt-get update && \
+    apt-get install -y libgmp-dev && \
+    docker-php-ext-install gmp
+
 # Copy the entrypoint.sh script to the container
 COPY entrypoint.sh /entrypoint.sh
 
