@@ -5,8 +5,11 @@ USE secureauction;
 -- Create a `users` table for storing user account information
 CREATE TABLE IF NOT EXISTS users (
   user_id INT AUTO_INCREMENT PRIMARY KEY,
-  user_name  VARCHAR(255) NOT NULL,
+  user_name VARCHAR(255) NOT NULL,
   password VARCHAR(255) NOT NULL,
+  user_type ENUM('REGULAR', 'PREMIUM') DEFAULT 'REGULAR',
+  public_key_e VARCHAR(255) DEFAULT NULL,
+  public_key_n VARCHAR(255) DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_user_name (user_name),
   INDEX idx_password (password)
@@ -19,6 +22,7 @@ CREATE TABLE IF NOT EXISTS items (
   description TEXT,
   image_url VARCHAR(1024),
   start_price VARCHAR(255) NOT NULL,
+  item_type ENUM('REGULAR', 'PREMIUM') DEFAULT 'REGULAR',
   user_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -35,46 +39,6 @@ CREATE TABLE IF NOT EXISTS bids (
   FOREIGN KEY (item_id) REFERENCES items(id)
 );
 
--- Create an `auctions` table for managing auctions
-CREATE TABLE IF NOT EXISTS auctions (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  item_id INT,
-  start_time TIMESTAMP NOT NULL,
-  end_time TIMESTAMP NOT NULL,
-  completed BOOLEAN DEFAULT FALSE,
-  FOREIGN KEY (item_id) REFERENCES items(id)
-);
-
-
-CREATE TABLE IF NOT EXISTS premium_users (
-  user_id INT AUTO_INCREMENT PRIMARY KEY,
-  user_name VARCHAR(255) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  public_key_e VARCHAR(512),
-  public_key_n VARCHAR(512),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_user_name (user_name),
-  INDEX idx_password (password)
-);
-
-
-
-CREATE TABLE IF NOT EXISTS special_items (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  description TEXT,
-  image_url VARCHAR(1024),
-  start_price VARCHAR(255) NOT NULL,
-  encrypted_bid VARCHAR(255) NOT NULL,
-  rsa_pub_key VARCHAR(255) NOT NULL,
-  premium_user_id INT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (premium_user_id) REFERENCES premium_users(user_id)
-);
-
-
-
-
 -- Insert data
 -- Users
 INSERT INTO users (user_id, user_name, password) VALUES ('1', 'user1', 'password1');
@@ -83,7 +47,8 @@ INSERT INTO users (user_id, user_name, password) VALUES ('3', 'user3', 'password
 INSERT INTO users (user_id, user_name, password) VALUES ('4', 'user4', 'password4');
 INSERT INTO users (user_id, user_name, password) VALUES ('5', 'user5', 'password5');
 
-
+-- Update user_type to 'PREMIUM' for two users
+UPDATE users SET user_type = 'PREMIUM' WHERE user_id IN (1, 2);
 
 -- Items
 INSERT INTO items (user_id, name, start_price) VALUES (1, 'Vintage Camera', 50);
@@ -107,7 +72,8 @@ INSERT INTO items (user_id, name, start_price) VALUES (1, 'Vintage Radio', 60);
 INSERT INTO items (user_id, name, start_price) VALUES (3, 'Antique Chair', 90);
 INSERT INTO items (user_id, name, start_price) VALUES (4, 'Rare Autographed Photo', 250);
 
-
+-- Update item_type to 'PREMIUM' for five items
+UPDATE items SET item_type = 'PREMIUM' WHERE id IN (1, 2, 3, 4, 5);
 
 -- Bids
 INSERT INTO bids (user_id, item_id, amount) VALUES (2, 1, 60);

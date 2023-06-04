@@ -26,7 +26,8 @@ $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 $itemsPerPage = 4;
 
 // Getting the items for the current page
-$result = $item->getItems($page, $itemsPerPage);
+$result = $item->getItems($page, $itemsPerPage, $user_data['user_type']);
+
 
 // Getting the total number of items
 $totalItems = $item->getTotalItems();
@@ -44,15 +45,18 @@ $totalPages = ceil($totalItems / $itemsPerPage);
         // Starting a table and adding table headers
         echo '<table class="table table-striped">';
         echo '<thead>';
-        echo '<tr><th scope="col">Item ID</th><th scope="col">Name</th><th scope="col">Start Price</th><th scope="col">Action</th></tr>';
+        echo '<tr><th scope="col">Item ID</th><th scope="col">Name</th><th scope="col">Start Price</th><th scope="col">Item Type</th><th scope="col">Action</th></tr>';
         echo '</thead>';
         echo '<tbody>';
         // Looping through each item and adding them as a row in the table
         while ($row = $result->fetch_assoc()) {
-            echo '<tr>';
+             // Check if the user is a PREMIUM user and the item is a PREMIUM item
+            $highlightClass = ($user_data['user_type'] === 'PREMIUM' && $row['item_type'] === 'PREMIUM') ? 'table-warning' : '';
+            echo '<tr class="' . $highlightClass . '">';
             echo '<th scope="row">' . $row['id'] . '</th>';
             echo '<td>' . $row['name'] . '</td>';
             echo '<td>' . $row['start_price'] . '</td>';
+            echo '<td>' . $row['item_type'] . '</td>';  // This line is added to display the item type
             echo '<td><a class="btn btn-primary" href="item_detail.php?id=' . $row['id'] . '">Place Bid</a></td>';
             echo '</tr>';
         }

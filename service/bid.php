@@ -68,42 +68,52 @@
             return 0;
         }
 
-       
-        
+        // Function to encrypt a message using RSA encryption
+        public function rsaEncrypt($message, $publicKey) {
+            $messageNum = gmp_init($message);
+            $encrypted = gmp_powm($messageNum, gmp_init($publicKey['public_key_e']), gmp_init($publicKey['public_key_n']));
+            //var_dump($encrypted);
+            return gmp_strval($encrypted);
+        }
 
-        // Function to place a bid on an item
+
+        // Function to place a bid
         public function placeBid($itemId, $userId, $amount) {
             // Ensure inputs are integers
-            $itemId = $itemId;
-            $userId = $userId;
-
-            // Check if the new bid contains the substring 'eno'
-            //$isEnoBid = stripos($amount, 'eno') !== false;
-            $isNumericBid = is_numeric($amount);
-            
-            /*if (!$isEnoBid && !$isNumericBid) {
-                die("Invalid bid. Please enter a valid number or bid contains the substring 'eno'.");
-            }*/
-
-            // Add the bid to the database without escaping or prepared statements
-            $insertQuery = "INSERT INTO bids (amount, user_id, item_id, created_at) VALUES ('$amount', $userId, $itemId, NOW())";
-
-            // Execute the insert query
-            $insertResult = $this->mysqli->query($insertQuery);
-
-            // Check if the insertion was successful
-            if ($insertResult) {
-                return true;
+            $itemId = intval($itemId);
+            $userId = intval($userId);
+        
+            // Fetch the item details
+            $stmt = $this->mysqli->prepare("SELECT * FROM items WHERE id = ?");
+            $stmt->bind_param("i", $itemId);
+            $stmt->execute();
+            $itemResult = $stmt->get_result();
+            $item = $itemResult->fetch_assoc();
+        
+            // Check if this is a premium item
+            if ($item['item_type'] === 'PREMIUM') {
+                // Create an instance of the User class
+                $user = new User($this->mysqli); // Pass the database connection
+        
+                // Get the user's public key
+                $publicKey = $user->getPublicKey($userId); // Use the user's ID passed to the function
+               
+                // Encrypt the amount using the public key
+                $encryptedAmount = $this->rsaEncrypt($amount, $publicKey);
+        
+                // Place the encrypted bid
+                $stmt = $this->mysqli->prepare("INSERT INTO bids (user_id, item_id, amount) VALUES (?, ?, ?)");
+                $stmt->bind_param("iis", $userId, $itemId, $encryptedAmount);
+                $stmt->execute();
             } else {
-                // If the insertion failed, print the error message and return false
-                echo 'Insert Error: ' . $this->mysqli->error;
-                return false;
+                // Place a normal (unencrypted) bid
+                $stmt = $this->mysqli->prepare("INSERT INTO bids (user_id, item_id, amount) VALUES (?, ?, ?)");
+                $stmt->bind_param("iis", $userId, $itemId, $amount);
+                $stmt->execute();
             }
-        }  
+        }
     }
-
-     // get total bis in the database for resolving pagination issue, from bids table not for a specific user
-     function getTotalBids($mysqli){
+    function getTotalBids($mysqli){
         $stmt = $mysqli->prepare("SELECT COUNT(*) as total_bids FROM bids");
         $stmt->execute(); 
         $result = $stmt->get_result(); 

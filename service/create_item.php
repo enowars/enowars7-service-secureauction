@@ -4,6 +4,7 @@ session_start();
 include "config.php";
 include "user.php";
 include "item.php";
+include "bid.php";
 
 // Check if the user is logged in
 $user = new User($con);
@@ -20,37 +21,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve form data
     $item_name = $_POST["item_name"];
     $start_price = $_POST["start_price"];
+    $item_type = $_POST["item_type"];
 
     // Validate form data
     if (
         empty($item_name) ||
-        (!is_numeric($start_price) && strpos($start_price, "eno") === false)
+        (!is_numeric($start_price) && strpos($start_price, "eno") === false) ||
+        !in_array($item_type, ['REGULAR', 'PREMIUM'])
     ) {
-        $error_message = "Please enter a valid item name and start price.";
+        $error_message = "Please enter a valid item name, start price, and item type.";
     } else {
-        // Create a new Item object
-        $item = new Item($con);
-
-        // Create the item
-        $item_id = $item->createItemWithBid(
-            $user_data["user_id"],
-            $item_name,
-            $start_price,
-        );
-
-        if ($item_id) {
-            // Item created successfully, redirect to the user's profile page
-            header("Location: item_detail.php?id=$item_id");
-            exit();
+        // Check if the user is trying to create a premium item but is not a premium user
+        if ($item_type == 'PREMIUM' && $user_data['user_type'] != 'PREMIUM') {
+            $error_message = "Regular users cannot create premium items.";
         } else {
-            $error_message = "Failed to create the item. Please try again.";
+            // Create a new Item object
+            $item = new Item($con);
+        
+            // Create the item
+            $item_id = $item->createItemWithBid(
+                $user_data["user_id"],
+                $item_name,
+                $start_price,
+                $item_type
+            );
+    
+            if ($item_id) {
+                // Item created successfully, redirect to the user's profile page
+                header("Location: item_detail.php?id=$item_id");
+                exit();
+            } else {
+                $error_message = "Failed to create the item. Please try again.";
+            }
         }
     }
-    // Create a new Item object
-    //$item = new Item($con);
-    // Create the item
-    //$item_id = $item->createItemWithBid($user_data['user_id'], $item_name, $start_price);
-    //header("Location: item_detail.php?id=$item_id");
 }
 ?>
 
@@ -82,6 +86,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <div class="alert alert-danger"><?php echo $error_message; ?></div>
                         <?php endif; ?>
                         <form method="post">
+                            <div class="form-group">
+                                <label for="item_type">Item Type</label>
+                                <select id="item_type" class="form-control" name="item_type">
+                                    <option value="REGULAR">Regular</option>
+                                    <option value="PREMIUM">Premium</option>
+                                </select>
+                            </div>
                             <div class="form-group">
                                 <label for="item_name">Item Name</label>
                                 <input id="item_name" class="form-control" type="text" name="item_name">
