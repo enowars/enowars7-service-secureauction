@@ -30,14 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
                 // Generate RSA keys for Premium users
-                if($userType == 'PREMIUM') {
+                if($userType === 'PREMIUM') {
                     $rsa_keys = $user->generate_stateful_rsa_keys();
                     $public_key_e = $rsa_keys['public']['e'];
                     $public_key_n = $rsa_keys['public']['n'];
+                    $private_key_d = $rsa_keys['private']['d']; // Get the private key
                 
-                    // Remove `user_id` from the columns list, as it's an AUTO_INCREMENT field
                     $stmt = $con->prepare("INSERT INTO users (user_name, password, user_type, public_key_e, public_key_n) VALUES (?, ?, ?, ?, ?)");
                     $stmt->bind_param("sssss", $user_name, $hashed_password, $userType, $public_key_e, $public_key_n);
+
                 }
                  else {
                     // Use prepared statements
@@ -52,12 +53,16 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                     $_SESSION['user_type'] = $userType;
                     $_SESSION['user_id'] = $con->insert_id; // get the last inserted ID
 
-                    // Redirect to user_index page
-                    header("Location: user_index.php");
+                    if($userType === 'PREMIUM') {
+                        $_SESSION['private_key'] = $private_key_d; // store private key in session
+                        // Redirect to intermediate page for premium user
+                        header("Location: display_key.php");
+                    } else {
+                        // Redirect to user_index page for regular user
+                        header("Location: user_index.php");
+                    }
                     exit;
                 }
-            } else {
-                $message = "Please enter valid information!";
             }
         }
     } else { // Login mode

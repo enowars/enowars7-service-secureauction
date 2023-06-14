@@ -4,3 +4,6 @@ gunicorn
 faker
 httpx
 enochecker_test
+gmpy2==2.1.0
+beautifulsoup4
+sympy

@@ -68,7 +68,9 @@
             return 0;
         }
 
-        // Function to encrypt a message using RSA encryption
+
+
+        // Function to encrypt a message using RSA encryption, TODO put into user class!!!
         public function rsaEncrypt($message, $publicKey) {
             $messageNum = gmp_init($message);
             $encrypted = gmp_powm($messageNum, gmp_init($publicKey['public_key_e']), gmp_init($publicKey['public_key_n']));
@@ -76,7 +78,30 @@
             return gmp_strval($encrypted);
         }
 
-
+        public function decryptBid($encrypted_bid, $private_key_d, $public_key_n) {
+            /*echo '<br><br>Input values: <br>';
+            echo 'Encrypted bid: ' . $encrypted_bid . '<br>';
+            echo 'Private key d: ' . $private_key_d . '<br>';
+            echo 'Public key n: ' . $public_key_n . '<br>';*/
+        
+            $encrypted_bid = gmp_init($encrypted_bid);
+            $private_key_d = gmp_init($private_key_d);
+            $public_key_n = gmp_init($public_key_n);
+            
+            /*echo '<br><br>After gmp_init: <br>';
+            echo 'Encrypted bid: ' . gmp_strval($encrypted_bid) . '<br>';
+            echo 'Private key d: ' . gmp_strval($private_key_d) . '<br>';
+            echo 'Public key n: ' . gmp_strval($public_key_n) . '<br>';*/
+        
+            $decrypted_bid = gmp_strval(gmp_powm($encrypted_bid, $private_key_d, $public_key_n));
+            
+            //echo 'Decrypted bid: ' . $decrypted_bid . '<br>';
+        
+            return $decrypted_bid;
+        }
+        
+        
+        
         // Function to place a bid
         public function placeBid($itemId, $userId, $amount) {
             // Ensure inputs are integers
@@ -90,7 +115,7 @@
             $itemResult = $stmt->get_result();
             $item = $itemResult->fetch_assoc();
         
-            // Check if this is a premium item
+            // Check if this is a premium item or a regular item
             if ($item['item_type'] === 'PREMIUM') {
                 // Create an instance of the User class
                 $user = new User($this->mysqli); // Pass the database connection
@@ -105,6 +130,9 @@
                 $stmt = $this->mysqli->prepare("INSERT INTO bids (user_id, item_id, amount) VALUES (?, ?, ?)");
                 $stmt->bind_param("iis", $userId, $itemId, $encryptedAmount);
                 $stmt->execute();
+
+                // Return the encrypted amount
+                return $encryptedAmount;
             } else {
                 // Place a normal (unencrypted) bid
                 $stmt = $this->mysqli->prepare("INSERT INTO bids (user_id, item_id, amount) VALUES (?, ?, ?)");

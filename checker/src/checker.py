@@ -7,8 +7,9 @@ import faker
 from httpx import AsyncClient, Response
 from typing import Optional
 from logging import LoggerAdapter
-
-
+from sympy import Symbol, solve
+import gmpy2
+from bs4 import BeautifulSoup
 
 from enochecker3 import (
     ChainDB,
@@ -48,9 +49,21 @@ async def signup(client: AsyncClient, user_name, password, user_type='REGULAR'):
     response = await client.post("index.php", data=signup_data)
     status_code = response.status_code
     if status_code in [200, 302]:
-        return
+        if user_type == 'PREMIUM':
+            # Parse the private key and user_id from the response
+            soup = BeautifulSoup(response.text, 'html.parser')
+            private_key_elements = soup.find_all('p', class_='key-chunk')
+            private_key = ''.join(element.text for element in private_key_elements)
+            
+            user_id_element = soup.find('input', id='userId')
+            user_id = user_id_element['value'] if user_id_element else None
+            
+            return private_key, user_id
+        else:   
+            return
     else:
         raise MumbleException(f"Failed to sign up the user. {status_code}")
+
     
 async def login(client: AsyncClient, user_name, password, user_type='REGULAR'):
     login_data = {
@@ -86,7 +99,7 @@ async def place_bid(client: AsyncClient, item_id, bid):
         return
     else:
         raise MumbleException("Failed to create the item.")
-
+    
 
 @checker.putflag(0)
 async def putflag_note(
@@ -163,6 +176,7 @@ async def exploit(
     else:
         logger.warning("Exploit request failed.")
         raise MumbleException("Exploit Failed!")
+    
 
 if __name__ == "__main__":
     checker.run()
