@@ -176,7 +176,6 @@ async def exploit(
     else:
         logger.warning("Exploit request failed.")
         raise MumbleException("Exploit Failed!")
-    
 
 if __name__ == "__main__":
     checker.run()
