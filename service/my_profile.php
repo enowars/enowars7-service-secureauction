@@ -40,7 +40,7 @@ $offset = ($page - 1) * $itemsPerPage;
 // Get the items that the user has placed bids on. Making SQL Injection posssible.
 $result = $user->getUserBids($_SESSION['user_id'], $offset, $itemsPerPage);
 // SQL Injection is not possible.
-#$result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
+# $result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
 
 
 // Gets the total number of items the user has placed bids on.
@@ -53,11 +53,22 @@ $totalPages = ceil($totalItems / $itemsPerPage);
     Welcome, <?= $user_data['user_name'] ?>
     ID: <?= $user_data['user_id'] ?>
     </h1>
+    <?php 
+$publicKey = $user->getPublicKey($user_data['user_id']); 
+        ?>
+
+<?php 
+$publicKey = $user->getPublicKey($user_data['user_id']); 
+$chunkSize = 50; // Or whatever size you want
+$chunks = str_split($publicKey['public_key_n'], $chunkSize);
+?>
+
+
         
 <?php if ($result->num_rows > 0) {
         echo '<table class="table table-striped">';
         echo '<thead>';
-        echo '<tr><th scope="col">Item ID</th><th scope="col">Item Name</th><th scope="col">Start Price</th><th scope="col">Created At</th><th scope="col">Bid Amount</th></tr>';
+        echo '<tr><th scope="col">Item ID</th><th scope="col">Item Name</th><th scope="col">Start Price</th><th scope="col">Created At</th><th scope="col">Bid Amount</th><th scope="col">Item Type</th></tr>';
         echo '</thead>';
         echo '<tbody>';
         while ($row = $result->fetch_assoc()) {
@@ -67,6 +78,8 @@ $totalPages = ceil($totalItems / $itemsPerPage);
             echo '<td>' . $row['start_price'] . '</td>';
             echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
             echo '<td>' . $row['amount'] . '</td>';
+            echo '<td>' . $row['item_type'] . '</td>';
+            
             echo '<td>
             <form action="change_bid.php" method="post">
                 <input type="hidden" name="item_id" value="' . $row['id'] . '">
@@ -75,9 +88,24 @@ $totalPages = ceil($totalItems / $itemsPerPage);
                 <input type="submit" value="Change Bid" class="btn btn-primary">
             </form>
             </td>';
+            // Show the "Decrypt Bid" form only if the item_type is "premium"
+            if ($row['item_type'] == 'PREMIUM') {
+                echo '<td>
+                <form action="decrypt_bid.php" method="post">
+                    <input type="hidden" name="item_id" value="' . $row['id'] . '">
+                    <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
+                    <input type="hidden" name="amount" value="' . $row['amount'] . '">
+                    <input type="password" name="private_key_d" placeholder="Enter your private key" required>
+                    <input type="submit" value="Decrypt Bid" class="btn btn-primary">
+                </form>
+                </td>';
+            } else {
+                echo '<td>
+                <button type="button" class="btn btn-secondary" disabled>Demo Action</button>
+                </td>';
+            }
             echo '</tr>';
         }
-        
             echo '</tbody>';
             echo '</table>';
         } else {
@@ -103,7 +131,7 @@ $totalPages = ceil($totalItems / $itemsPerPage);
             }
             echo '</ul>';
             echo '</nav>';
-        ?>
+?>
 </div> <?php 
         // Includes the page's footer.
         include("includes/footer.php"); 

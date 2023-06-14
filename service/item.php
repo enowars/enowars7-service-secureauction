@@ -57,17 +57,6 @@ class Item
             {
                 return $itemId;
             }
-            else
-            {
-                // Failed to place bid, rollback the item creation
-                $deleteStmt = $this
-                    ->mysqli
-                    ->prepare("DELETE FROM items WHERE id = ?");
-                $deleteStmt->bind_param("i", $itemId);
-                $deleteStmt->execute();
-
-                return false;
-            }
         }
         else
         {
@@ -75,7 +64,8 @@ class Item
         }
     }
 
-    // Define a method to get a page of items from the database
+
+    // Get the items, the bids for that item and the e and n values for the user who placed the bid
     public function getItems($page, $itemsPerPage, $userType)
     {
         // Calculate the offset for the SQL query based on the current page number and the number of items per page
@@ -84,9 +74,15 @@ class Item
         // Prepare the SQL statement
         if ($userType === 'PREMIUM')
         {
-            $stmt = $this
-                ->mysqli
-                ->prepare("SELECT * FROM items LIMIT ? OFFSET ?");
+            // TODO, keys for regular items are also shown, because it was a premium user whp set the item up
+            $stmt = $this->mysqli->prepare("
+            SELECT items.*, max(bids.amount) as bidamount, users.public_key_e, users.public_key_n 
+            FROM items
+            LEFT JOIN bids ON items.id = bids.item_id
+            LEFT JOIN users ON items.user_id = users.user_id
+            GROUP BY items.id
+            LIMIT ? OFFSET ?
+            ");
             $stmt->bind_param("ii", $itemsPerPage, $offset);
         }
         else

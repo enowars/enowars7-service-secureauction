@@ -7,8 +7,9 @@ import faker
 from httpx import AsyncClient, Response
 from typing import Optional
 from logging import LoggerAdapter
-
-
+from sympy import Symbol, solve
+import gmpy2
+from bs4 import BeautifulSoup
 
 from enochecker3 import (
     ChainDB,
@@ -48,9 +49,21 @@ async def signup(client: AsyncClient, user_name, password, user_type='REGULAR'):
     response = await client.post("index.php", data=signup_data)
     status_code = response.status_code
     if status_code in [200, 302]:
-        return
+        if user_type == 'PREMIUM':
+            # Parse the private key and user_id from the response
+            soup = BeautifulSoup(response.text, 'html.parser')
+            private_key_elements = soup.find_all('p', class_='key-chunk')
+            private_key = ''.join(element.text for element in private_key_elements)
+            
+            user_id_element = soup.find('input', id='userId')
+            user_id = user_id_element['value'] if user_id_element else None
+            
+            return private_key, user_id
+        else:   
+            return
     else:
         raise MumbleException(f"Failed to sign up the user. {status_code}")
+
     
 async def login(client: AsyncClient, user_name, password, user_type='REGULAR'):
     login_data = {
@@ -86,7 +99,7 @@ async def place_bid(client: AsyncClient, item_id, bid):
         return
     else:
         raise MumbleException("Failed to create the item.")
-
+    
 
 @checker.putflag(0)
 async def putflag_note(
@@ -163,6 +176,66 @@ async def exploit(
     else:
         logger.warning("Exploit request failed.")
         raise MumbleException("Exploit Failed!")
+    
 
+    
+@checker.putflag(1)
+async def putflag_note(
+        task: PutflagCheckerTaskMessage,
+        db: ChainDB,
+        client: AsyncClient,
+        logger: LoggerAdapter,
+) -> str:
+    user_name = ''.join(random.choices(string.ascii_lowercase, k=10))
+    password = ''.join(random.choices(string.ascii_lowercase, k=10))
+
+    private_key, user_id = await signup(client, user_name, password, 'PREMIUM')
+
+    item_name = ''.join(random.choices(string.ascii_lowercase, k=10))
+    item_id = await create_item(client, item_name, task.flag,  'PREMIUM')
+    encrypted_bid = await place_bid(client, item_id, task.flag)
+
+    # storing importnat data in the db to get it later in the getflag, its the checker db
+    await db.set("item", (user_name, password, item_name, private_key, user_id, item_id, encrypted_bid))
+
+    return user_name
+
+
+@checker.getflag(1)
+async def getflag_note(
+    task: GetflagCheckerTaskMessage,
+    db: ChainDB,
+    logger: LoggerAdapter,
+    client: AsyncClient
+) -> None:
+    try:
+        user_name, password, item_name, private_key_d, user_id, item_id, encrypted_bid = await db.get("item")
+    except KeyError:
+        raise MumbleException("Item missing")
+
+    await login(client, user_name, password, 'PREMIUM')
+
+    # Post parameters to decrypt_bid.php
+    decrypt_response = await client.post(
+        "decrypt_bid.php",
+        data={"private_key_d": private_key_d, "user_id": user_id, "item_id": item_id, "amount": encrypted_bid},
+    )
+
+    # Extract the decrypted bid (flag) from the response
+    flag_match = re.search(r"Decrypted Bid:\s+(FLAG\{.+\})", decrypt_response.text)
+
+    if flag_match is None:
+        raise MumbleException("Failed to find the flag")
+
+    decrypted_flag_str = flag_match.group(1)
+
+    # Verify that the decrypted flag matches the stored flag
+    if decrypted_flag_str == task.flag:
+        logger.success("Flag decrypted successfully")
+    else:
+        raise MumbleException("Flag not found")
+
+
+#####################################################################
 if __name__ == "__main__":
     checker.run()

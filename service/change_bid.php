@@ -30,22 +30,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("You can only change your own bids.");
     }
 
-    // Check if the new bid contains the substring 'eno', TODO
-    /*$isEnoBid = strpos($newBid, 'eno') !== false;
-    if (!$isEnoBid && !is_numeric($newBid)) {
-        die("Invalid bid. Please enter a valid number or bid contains the substring 'eno'.");
-    }*/
-
     // Get the item details
     $item_details = $item->getItemDetails($itemId);
 
     // Create new Bid object
     $bid = new Bid($con);
-
-    // Ensure new bid is higher than the starting price if it's not an 'eno' bid, TODO
-    /*if (!$isEnoBid && $newBid < $item_details['start_price']) {
-        die("Your bid must be higher than the starting price unless it starts with 'eno'.");
-    }*/
 
     // Get the current highest bid for the item from the logged-in user
     $highestBid = $bid->getHighestBidByUser($itemId, $userId);
@@ -53,9 +42,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Update the bid
     $result = $bid->placeBid($itemId, $userId, $newBid);
 
+
+    // TODO after changing the bid in my profile, i want to go back to the item page
     // If bid was updated successfully
     if ($result) {
-        //echo "Bid updated successfully!";
         //Redirect back to the previous page
         header("Location: ".$_SERVER['HTTP_REFERER']);
     } else {

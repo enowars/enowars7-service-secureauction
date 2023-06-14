@@ -129,18 +129,19 @@ class User
 
     // Function to fetch a specific set of bids for a user, with support for pagination
     public function getUserBids($user_id, $offset, $limit)
-    {
-        // SQL Injection here
-        $sql = "SELECT items.id, items.name, items.start_price, items.created_at, bids.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = " . $user_id . " ORDER BY items.created_at DESC LIMIT " . $offset . ", " . $limit;
+{
+    // SQL Injection here
+    $sql = "SELECT items.id, items.name, items.start_price, items.item_type, items.created_at, bids.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = " . $user_id . " ORDER BY items.created_at DESC LIMIT " . $offset . ", " . $limit;
 
-        // Execute the query
-        $result = $this
-            ->connection
-            ->query($sql);
+    // Execute the query
+    $result = $this
+        ->connection
+        ->query($sql);
 
-        // Return the result
-        return $result;
-    }
+    // Return the result
+    return $result;
+}
+
 
     // Function to fetch a user by username
     public function getUserByUsername($user_name)
@@ -188,9 +189,10 @@ class User
         // Generate a random prime number p
         $p = $this->generate_random_prime(($bit_length - 1) / 2);
 
-        // q is a function of p: SHA-256(p), converted to number, next prime number greater than that
-        $hash = hash('sha256', gmp_strval($p));
-        $number = gmp_init('0x' . $hash); // convert hex hash to number
+        // q is a function of p: Next prime number after p * (p + offset)
+        $offset = gmp_init("10");
+        $increased_p = gmp_add($p, $offset);
+        $number = gmp_mul($p, $increased_p);
         $q = gmp_nextprime($number);
 
         // Calculate n = p * q
@@ -206,8 +208,15 @@ class User
             $e = gmp_add($e, 2);
         }
 
-        // Return only the public key (e, n)
-        return ['public' => ['e' => gmp_strval($e) , 'n' => gmp_strval($n) ]];
+        // Calculate d, the modular inverse of e mod totient
+        $d = gmp_invert($e, $totient);
+
+        // Return both the public key (e, n) and the private key (d, n)
+        // Return both the public and private keys
+        return [
+            'public' => ['e' => gmp_strval($e) , 'n' => gmp_strval($n)],
+            'private' => ['d' => gmp_strval($d)]
+        ];
     }
 
     // Function to generate and store RSA keys for a user
@@ -215,6 +224,7 @@ class User
     {
         $rsa_keys = $this->generate_stateful_rsa_keys();
         $public_key = $rsa_keys['public'];
+        $private_key = $rsa_keys['private'];
 
         // Update the user's keys in the database
         $stmt = $this
@@ -222,6 +232,8 @@ class User
             ->prepare("UPDATE users SET public_key_e = ?, public_key_n = ? WHERE user_id = ?");
         $stmt->bind_param("ssi", $public_key['e'], $public_key['n'], $user_id);
         $stmt->execute();
+
+        
     }
 
     // Function to get the public key of a user

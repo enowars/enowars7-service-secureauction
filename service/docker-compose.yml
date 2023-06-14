@@ -23,9 +23,9 @@ services:
       MYSQL_USER: appuser    
       MYSQL_PASSWORD: secure_password    
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    ports:
-      - 8001:80
-    environment:
-      - PMA_HOST=db
-      - PMA_PORT=3306
+      image: phpmyadmin/phpmyadmin
+      ports:
+        - 8001:80
+      environment:
+        - PMA_HOST=db
+        - PMA_PORT=3306

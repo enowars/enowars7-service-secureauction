@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   password VARCHAR(255) NOT NULL,
   user_type ENUM('REGULAR', 'PREMIUM') DEFAULT 'REGULAR',
   public_key_e VARCHAR(255) DEFAULT NULL,
-  public_key_n VARCHAR(255) DEFAULT NULL,
+  public_key_n VARCHAR(1024) DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_user_name (user_name),
   INDEX idx_password (password)
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS items (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   image_url VARCHAR(1024),
-  start_price VARCHAR(255) NOT NULL,
+  start_price VARCHAR(1024) NOT NULL,
   item_type ENUM('REGULAR', 'PREMIUM') DEFAULT 'REGULAR',
   user_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS items (
 -- Create a `bids` table for storing bids on auction items
 CREATE TABLE IF NOT EXISTS bids (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  amount VARCHAR(255) NOT NULL,
+  amount VARCHAR(1024) NOT NULL,
   user_id INT,
   item_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
