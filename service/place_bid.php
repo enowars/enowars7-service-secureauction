@@ -59,4 +59,11 @@ $bid->placeBid($item_id, $user_data['user_id'], $bid_amount);
 // Redirect back to the item details page
 header("Location: item_detail.php?id=$item_id&success=bid_placed");
 exit;
+
+//$encrypted_bid = $bid->placeBid($item_id, $user_data['user_id'], $bid_amount);
+
+// Output a success message and the encrypted bid in JSON format
+/*header('Content-Type: application/json');
+echo json_encode(array('success' => true, 'encrypted_bid' => $encrypted_bid));
+exit;*/
 ?>

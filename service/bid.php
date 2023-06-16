@@ -10,6 +10,7 @@
             $this->mysqli = $con;
         }
 
+
         // Function to retrieve the highest bid for a given item
         public function getHighestBid($itemId) {
             $stmt = $this->mysqli->prepare("SELECT MAX(amount) as highest_bid FROM bids WHERE item_id = ?");
@@ -28,6 +29,7 @@
                 return false;
             }
         }
+
 
         // Function to retrieve the highest bid placed by a specific user for a given item
         public function getUserHighestBid($itemId, $userId) {
@@ -52,6 +54,7 @@
             }
         }
 
+
         // Function to get the highest bid placed by a specific user for a given item
         public function getHighestBidByUser($itemId, $userId) {
             // Prepare the query with placeholders for the item ID and user ID
@@ -64,42 +67,38 @@
                 $data = $result->fetch_assoc();
                 return $data['highest_bid'];
             }
-
             return 0;
         }
 
 
-
-        // Function to encrypt a message using RSA encryption, TODO put into user class!!!
+        // Function to encrypt a message using RSA encryption
         public function rsaEncrypt($message, $publicKey) {
-            $messageNum = gmp_init($message);
-            $encrypted = gmp_powm($messageNum, gmp_init($publicKey['public_key_e']), gmp_init($publicKey['public_key_n']));
-            //var_dump($encrypted);
+            // Convert the message into bytes and then to a hex string
+            $messageHex = bin2hex($message);
+            // Convert the hex string into a GMP number
+            $messageNum = gmp_init($messageHex, 16);
+            // Perform the encryption
+            $encrypted = gmp_powm($messageNum, gmp_init($publicKey['public_key_e'], 10), gmp_init($publicKey['public_key_n'], 10));
+            // Convert the result to a string and return it
             return gmp_strval($encrypted);
         }
+        
+        
+        public function decryptBid($encrypted_bid, $privateKey) {
+            // Check if private_key_d and public_key_n are set
+            if(!isset($privateKey['private_key_d']) || !isset($privateKey['public_key_n'])) {
+                echo "Error: private_key_d or public_key_n is not set.\n";
+                return null;
+            }
 
-        public function decryptBid($encrypted_bid, $private_key_d, $public_key_n) {
-            /*echo '<br><br>Input values: <br>';
-            echo 'Encrypted bid: ' . $encrypted_bid . '<br>';
-            echo 'Private key d: ' . $private_key_d . '<br>';
-            echo 'Public key n: ' . $public_key_n . '<br>';*/
-        
-            $encrypted_bid = gmp_init($encrypted_bid);
-            $private_key_d = gmp_init($private_key_d);
-            $public_key_n = gmp_init($public_key_n);
-            
-            /*echo '<br><br>After gmp_init: <br>';
-            echo 'Encrypted bid: ' . gmp_strval($encrypted_bid) . '<br>';
-            echo 'Private key d: ' . gmp_strval($private_key_d) . '<br>';
-            echo 'Public key n: ' . gmp_strval($public_key_n) . '<br>';*/
-        
-            $decrypted_bid = gmp_strval(gmp_powm($encrypted_bid, $private_key_d, $public_key_n));
-            
-            //echo 'Decrypted bid: ' . $decrypted_bid . '<br>';
-        
-            return $decrypted_bid;
+            // Perform the decryption
+            $decrypted_bid = gmp_powm(gmp_init($encrypted_bid, 10), gmp_init($privateKey['private_key_d'], 10), gmp_init($privateKey['public_key_n'], 10));
+            // Convert the result to a hexadecimal string
+            $decrypted_bid_hex = gmp_strval($decrypted_bid, 16);
+            // Convert the hexadecimal string into a binary string (which is our original message)
+            $decrypted_bid_string = hex2bin($decrypted_bid_hex);
+            return $decrypted_bid_string;
         }
-        
         
         
         // Function to place a bid
@@ -141,20 +140,22 @@
             }
         }
     }
-    function getTotalBids($mysqli){
-        $stmt = $mysqli->prepare("SELECT COUNT(*) as total_bids FROM bids");
-        $stmt->execute(); 
-        $result = $stmt->get_result(); 
-    
-        // Check if the query was successful
-        if ($result) {
-            // Fetch the result as an associative array and return the highest bid
-            $data = $result->fetch_assoc();
-            return $data['total_bids'];
-        } else {
-            // If the query failed, print the error message and return false
-            echo 'Query Error: ' . $mysqli->error;
-            return false;
+
+
+        function getTotalBids($mysqli){
+            $stmt = $mysqli->prepare("SELECT COUNT(*) as total_bids FROM bids");
+            $stmt->execute(); 
+            $result = $stmt->get_result(); 
+        
+            // Check if the query was successful
+            if ($result) {
+                // Fetch the result as an associative array and return the highest bid
+                $data = $result->fetch_assoc();
+                return $data['total_bids'];
+            } else {
+                // If the query failed, print the error message and return false
+                echo 'Query Error: ' . $mysqli->error;
+                return false;
+            }
         }
-    }
 ?>

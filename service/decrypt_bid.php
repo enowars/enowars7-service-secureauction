@@ -36,8 +36,12 @@ $chunksPublicKeyE = str_split($public_key_e, $chunkSize);
 $chunksPublicKeyN = str_split($public_key_n, $chunkSize);
 $chunksPrivateKeyD = str_split($private_key_d, $chunkSize);
 
-// Decrypt bid using the private key and the corresponding public key parts
-$decrypted_bid = $bid->decryptBid($amount, $private_key_d, $public_key_n);
+$keys = [
+    'private_key_d' => $private_key_d,
+    'public_key_n' => $public_key_n,
+];
+
+$decrypted_bid = $bid->decryptBid($amount, $keys);
 ?>
 
 <!DOCTYPE html>

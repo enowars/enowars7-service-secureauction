@@ -23,14 +23,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $start_price = $_POST["start_price"];
     $item_type = $_POST["item_type"];
 
-    // Validate form data
-    if (
-        empty($item_name) ||
-        (!is_numeric($start_price) && strpos($start_price, "eno") === false) ||
-        !in_array($item_type, ['REGULAR', 'PREMIUM'])
-    ) {
-        $error_message = "Please enter a valid item name, start price, and item type.";
-    } else {
+        // Validate form data
+        if (empty($item_name)) {
+            $error_message = "Item name cannot be empty. You entered: '{$item_name}'";
+        } elseif ($start_price === '' || $start_price === null) {
+            $error_message = "Start price cannot be empty. You entered: '{$start_price}'";
+        } elseif (!in_array($item_type, ['REGULAR', 'PREMIUM'])) {
+            $error_message = "Item type must be either 'REGULAR' or 'PREMIUM'. You entered: '{$item_type}'";
+        }  else {
         // Check if the user is trying to create a premium item but is not a premium user
         if ($item_type == 'PREMIUM' && $user_data['user_type'] != 'PREMIUM') {
             $error_message = "Regular users cannot create premium items.";
@@ -55,6 +55,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     }
+}
+if(isset($error_message)) {
+    echo $error_message;
 }
 ?>
 

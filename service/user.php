@@ -20,8 +20,6 @@ class User
         if (isset($_SESSION['user_id']))
         {
             $user_id = $_SESSION['user_id'];
-
-            // Directly insert the user_id into the SQL statement, TODO: use prepared statements otherwise SQL INJECTION
             $sql = "SELECT * FROM users WHERE user_id = " . $user_id;
             $result = $this
                 ->connection
@@ -130,7 +128,7 @@ class User
     // Function to fetch a specific set of bids for a user, with support for pagination
     public function getUserBids($user_id, $offset, $limit)
 {
-    // SQL Injection here
+    
     $sql = "SELECT items.id, items.name, items.start_price, items.item_type, items.created_at, bids.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = " . $user_id . " ORDER BY items.created_at DESC LIMIT " . $offset . ", " . $limit;
 
     // Execute the query
@@ -231,9 +229,7 @@ class User
             ->connection
             ->prepare("UPDATE users SET public_key_e = ?, public_key_n = ? WHERE user_id = ?");
         $stmt->bind_param("ssi", $public_key['e'], $public_key['n'], $user_id);
-        $stmt->execute();
-
-        
+        $stmt->execute();   
     }
 
     // Function to get the public key of a user

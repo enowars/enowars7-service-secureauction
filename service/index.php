@@ -41,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
                 }
                  else {
-                    // Use prepared statements
                     $stmt = $con->prepare("INSERT INTO users (user_name, password, user_type) VALUES (?, ?, ?)");
                     $stmt->bind_param("sss", $user_name, $hashed_password, $userType);
                 }

@@ -42,16 +42,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Update the bid
     $result = $bid->placeBid($itemId, $userId, $newBid);
 
-
-    // TODO after changing the bid in my profile, i want to go back to the item page
     // If bid was updated successfully
     if ($result) {
         //Redirect back to the previous page
         header("Location: ".$_SERVER['HTTP_REFERER']);
-    } else {
-        echo "There was an error updating your bid, Volkan. Your attempted new bid was: " . $newBid;
+    } 
+    else {
+        // TODO
+        echo "There was an error updating your bid, Volkan. Not really!!! Your attempted new bid was: " . $newBid;
     }
 } else {
-    echo "No form data received.";
+        echo "No form data received.";
 }
 ?>

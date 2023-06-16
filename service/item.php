@@ -23,6 +23,7 @@ class Item
             $user = new User($this->mysqli); // Pass the database connection
             // Get the user's public key
             $publicKey = $user->getPublicKey($userId);
+           
             // Create an instance of the Bid class
             $bid = new Bid($this->mysqli); // Pass the database connection
             // Encrypt the bid amount using the public key
@@ -74,7 +75,6 @@ class Item
         // Prepare the SQL statement
         if ($userType === 'PREMIUM')
         {
-            // TODO, keys for regular items are also shown, because it was a premium user whp set the item up
             $stmt = $this->mysqli->prepare("
             SELECT items.*, max(bids.amount) as bidamount, users.public_key_e, users.public_key_n 
             FROM items

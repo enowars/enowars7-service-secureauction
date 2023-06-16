@@ -12,7 +12,6 @@ include("bid.php");     // Contains Bid class definition
 $user = new User($con);
 
 // Calling the checkLogin function to verify if the user is logged in
-// If logged in, it returns user data, else redirects to login page
 $user_data = $user->checkLogin($con);
 
 // Creating an Item object and passing database connection as a parameter
