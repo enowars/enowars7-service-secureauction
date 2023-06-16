@@ -40,6 +40,7 @@ app = lambda: checker.app
 
 
 async def signup(client: AsyncClient, user_name, password, user_type='REGULAR'):
+    logger.info(f"Starting signup process for user: {user_name}")
     signup_data = {
         "user_name": user_name,
         "password": password,
@@ -48,44 +49,69 @@ async def signup(client: AsyncClient, user_name, password, user_type='REGULAR'):
     }
     response = await client.post("index.php", data=signup_data)
     status_code = response.status_code
-    if status_code in [200, 302]:
+    logger.info(f"Received status code {status_code} for signup process")
+    
+    if status_code in [200,302]:
+        # Check if a redirection occurred
+        if 'Location' in response.headers:
+            new_url = response.headers['Location']
+            response = await client.get(new_url)  # Fetch the redirected page
+            status_code = response.status_code
+            logger.info(f"Received status code {status_code} for redirected page")
+
+        logger.debug(f"Signup response HTML: {response.text}")
         if user_type == 'PREMIUM':
             # Parse the private key and user_id from the response
             soup = BeautifulSoup(response.text, 'html.parser')
+            logger.debug(f"Signup response parsed HTML: {soup.prettify()}")
+            
             private_key_elements = soup.find_all('p', class_='key-chunk')
             private_key = ''.join(element.text for element in private_key_elements)
             
             user_id_element = soup.find('input', id='userId')
             user_id = user_id_element['value'] if user_id_element else None
             
+            logger.info(f"Parsed private key: {private_key} and user_id: {user_id}")
             return private_key, user_id
         else:   
             return
     else:
+        logger.error(f"Failed to sign up the user. {status_code}")
         raise MumbleException(f"Failed to sign up the user. {status_code}")
 
-    
+
 async def login(client: AsyncClient, user_name, password, user_type='REGULAR'):
+    logger.info(f"Starting login process for user: {user_name}")
     login_data = {
         "user_name": user_name,
         "password": password,
         "user_type": user_type,
         "action": "login"
     }
-    await client.post("index.php", data=login_data)
+    response = await client.post("index.php", data=login_data)
+    status_code = response.status_code
+    logger.info(f"Received status code {status_code} for login process")
+    if status_code != 302:
+        logger.error(f"Failed to log in the user. {status_code}")
+        raise MumbleException(f"Failed to log in the user. {status_code}")
 
-
-async def create_item(client: AsyncClient, item_name, start_price, item_type) -> int:
+async def create_item(client: AsyncClient, item_name, start_price, item_type='REGULAR') -> int:
+    logger.info(f"Attempting to create item: {item_name}")
     item_data = {
         "item_name": item_name,
         "start_price": start_price,
         "item_type": item_type
     }
+    logger.debug(f"Item data: {item_data}")  # Logging the item_data
     response = await client.post("create_item.php", data=item_data)
-    if response.status_code == 302:
+    logger.debug(f"Create item response: {response.text}")
+
+    if response.status_code  == 302:
         redirect_uri = response.headers['Location']
+        logger.debug(f"Redirect URI: {redirect_uri}")
         return int(redirect_uri[redirect_uri.index("=") + 1:])
     else:
+        logger.error(f"Failed to create the item. Status code: {response.status_code}")
         raise MumbleException("Failed to create the item.")
 
 
