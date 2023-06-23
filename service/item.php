@@ -16,19 +16,6 @@ class Item
     public function createItemWithBid($userId, $itemName, $bidAmount, $itemType)
     {
         $startPrice = $bidAmount; // Set the start_price to the bid amount by default
-        // If the item type is premium, encrypt the start_price
-        if ($itemType === 'PREMIUM')
-        {
-            // Create an instance of the User class
-            $user = new User($this->mysqli); // Pass the database connection
-            // Get the user's public key
-            $publicKey = $user->getPublicKey($userId);
-           
-            // Create an instance of the Bid class
-            $bid = new Bid($this->mysqli); // Pass the database connection
-            // Encrypt the bid amount using the public key
-            $startPrice = $bid->rsaEncrypt($bidAmount, $publicKey);
-        }
 
         // Prepare the SQL statement to insert a new item
         $stmt = $this

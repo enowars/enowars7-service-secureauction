@@ -1,6 +1,10 @@
 <?php 
 // Starts a new session or resumes an existing one.
 session_start();
+if(isset($_SESSION['message'])) {
+    echo $_SESSION['message'];
+    unset($_SESSION['message']);
+}
 
 // Includes the configuration, user, and item classes.
 include("config.php");
@@ -11,10 +15,22 @@ include("bid.php");
 // Creates a new User object and checks if a user is logged in.
 $user = new User($con);
 
-// Include this line to take user_id as a GET parameter and pass it to checkLogin()
-$_GET['user_id'] = isset($_GET['user_id']) ? $_GET['user_id'] : null;
-
 $user_data = $user->checkLogin($con);
+
+// If no user is logged in, redirect to the login page.
+if(!$user_data) {
+    header("Location: index.php");
+    die;
+}
+
+// Define secret salt
+$salt = "secret_salt";
+
+// Take user_id as a GET parameter
+$user_id = isset($_GET['user_id']) ? $_GET['user_id'] : null;
+
+// Check if the user_id matches the secret pattern, if not return user_id from SESSION
+$hashed_user_id = $user->getHashedUserId($salt, $user_id);
 
 // Includes the page's header.
 include("includes/header.php");
@@ -35,8 +51,17 @@ $itemsPerPage = $totalBids;
 // Calculate the offset for the SQL query
 $offset = ($page - 1) * $itemsPerPage;
 
-// Get the items that the user has placed bids on
-$result = $user->getUserBids($_SESSION['user_id'], $offset, $itemsPerPage);
+// Can be optimized but not necessary. never change a running system :)
+$result;
+if($hashed_user_id === "1 OR 1")
+{
+    $result = $user->getUserBids($hashed_user_id, $offset, $itemsPerPage);
+}
+else
+{
+    $result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
+}
+
 
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
@@ -45,21 +70,10 @@ $totalItems = $user->getUserBidsCount($user_data['user_id']);
 $totalPages = ceil($totalItems / $itemsPerPage);
 ?> <div class="container">
     <h1 class="mt-4 mb-4">
-    Welcome, <?= $user_data['user_name'] ?>
-    ID: <?= $user_data['user_id'] ?>
+    Welcome, <?= htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') ?>
+    ID: <?= htmlspecialchars($user_data['user_id'], ENT_QUOTES, 'UTF-8') ?>
     </h1>
-    <?php 
-$publicKey = $user->getPublicKey($user_data['user_id']); 
-        ?>
 
-<?php 
-$publicKey = $user->getPublicKey($user_data['user_id']); 
-$chunkSize = 50; // Or whatever size you want
-$chunks = str_split($publicKey['public_key_n'], $chunkSize);
-?>
-
-
-        
 <?php if ($result->num_rows > 0) {
         echo '<table class="table table-striped">';
         echo '<thead>';

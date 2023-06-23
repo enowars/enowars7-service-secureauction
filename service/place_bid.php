@@ -53,17 +53,31 @@ if (empty($bid_amount)) {
     exit;
 }
 
-// Place the bid
-$bid->placeBid($item_id, $user_data['user_id'], $bid_amount);
+// Check if the bid amount is negative
+if ($bid_amount < 0) {
+    // Redirect back to the item details page with an error message
+    header("Location: item_detail.php?id=$item_id&error=negative_bid");
+    exit;
+}
 
-// Redirect back to the item details page
-header("Location: item_detail.php?id=$item_id&success=bid_placed");
-exit;
+// Check if the bid amount is negative
+if ($bid_amount < $item_details['start_price']) {
+    // Redirect back to the item details page with an error message
+    header("Location: item_detail.php?id=$item_id&error=bid_less_than_starting_price");
+    exit;
+}
 
-//$encrypted_bid = $bid->placeBid($item_id, $user_data['user_id'], $bid_amount);
+$encrypted_bid = $bid->placeBid($item_id, $user_data['user_id'], $bid_amount);
 
-// Output a success message and the encrypted bid in JSON format
-/*header('Content-Type: application/json');
-echo json_encode(array('success' => true, 'encrypted_bid' => $encrypted_bid));
-exit;*/
+if ($user_data['user_type'] === 'PREMIUM') {
+    // Output a success message and the encrypted bid in JSON format for PREMIUM users
+    header('Content-Type: application/json');
+    echo json_encode(array('success' => true, 'encrypted_bid' => $encrypted_bid));
+    exit;
+} else {
+    // Redirect back to the item details page for non-PREMIUM users
+    header("Location: item_detail.php?id=$item_id&success=bid_placed");
+    exit;
+}
+
 ?>

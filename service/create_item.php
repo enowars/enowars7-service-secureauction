@@ -26,8 +26,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Validate form data
         if (empty($item_name)) {
             $error_message = "Item name cannot be empty. You entered: '{$item_name}'";
-        } elseif ($start_price === '' || $start_price === null) {
-            $error_message = "Start price cannot be empty. You entered: '{$start_price}'";
+        } elseif ($start_price === '' || $start_price === null || $start_price < 0) {
+            $error_message = "Start price cannot be empty or negative. You entered: '{$start_price}'";
         } elseif (!in_array($item_type, ['REGULAR', 'PREMIUM'])) {
             $error_message = "Item type must be either 'REGULAR' or 'PREMIUM'. You entered: '{$item_type}'";
         }  else {
@@ -55,9 +55,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     }
-}
-if(isset($error_message)) {
-    echo $error_message;
 }
 ?>
 

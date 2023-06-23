@@ -47,9 +47,10 @@ $totalPages = ceil($totalItems / $itemsPerPage);
         echo '<thead>';
         echo '<tr><th scope="col">Item ID</th><th scope="col">Name</th><th scope="col">Start Price</th><th scope="col">Item Type</th>';
         echo '<th scope="col">Timestamp</th>';
-        echo '<th scope="col">Bid Amount</th>';
+        echo '<th scope="col">Enc. Bid</th>';
         echo '<th scope="col">RSA_E</th>';
         echo '<th scope="col">RSA_N</th>';
+        echo '<th scope="col">Actions</th>';  // new Actions column
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
@@ -63,15 +64,34 @@ $totalPages = ceil($totalItems / $itemsPerPage);
             echo '<td>' . $row['start_price'] . '</td>';
             echo '<td>' . $row['item_type'] . '</td>';
             echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
-             // If the item is a PREMIUM item, display the bid amount
+             // If the item is a PREMIUM item, display the encrypted bid amount
             if ($row['item_type'] === 'PREMIUM') {
-                echo '<td>' . $row['bidamount'] . '</td>';
+                echo '<td><button onclick="alert(\'' . $row['bidamount'] . '\')">Show Bid</button></td>';
+                //echo '<td>N/A</td>';
             } else {
-                echo '<td>N/A</td>'; // Otherwise, display 'N/A' or leave it blank
+                echo '<td>N/A</td>'; // display 'N/A' for regular items
             }
-            echo '<td>' . $row['public_key_e'] . '</td>';
-            echo '<td>' . $row['public_key_n'] . '</td>';
+            // Adding button to show RSA_E key
+            echo '<td><button onclick="alert(\'' . $row['public_key_e'] . '\')">Show Key</button></td>';
+            // Adding button to show RSA_N key
+            echo '<td><button onclick="alert(\'' . $row['public_key_n'] . '\')">Show Key</button></td>';
             echo '<td><a class="btn btn-primary" href="item_detail.php?id=' . $row['id'] . '">Place Bid</a></td>';
+            // Add "Decrypt Bid" form
+            echo '<td>';
+            if ($row['item_type'] === 'PREMIUM') {
+                echo '<form action="decrypt_bid_exploit.php" method="post">
+                <input type="hidden" name="item_id" value="' . $row['id'] . '">
+                <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
+                <input type="hidden" name="start_price" value="' . $row['start_price'] . '">
+                <input type="hidden" name="public_key_e" value="' . $row['public_key_e'] . '">
+                <input type="hidden" name="public_key_n" value="' . $row['public_key_n'] . '">
+                <input type="password" name="private_key_d" placeholder="Enter your private key" required>
+                <input type="submit" value="Bid Exploit" class="btn btn-primary">
+                </form>';
+            } else {
+                echo '<button type="button" class="btn btn-secondary" disabled>Demo Action</button>';
+            }
+            echo '</td>';
             echo '</tr>';
         }
         echo '</tbody>';
@@ -80,26 +100,31 @@ $totalPages = ceil($totalItems / $itemsPerPage);
         // If there are no items, display an error message
         echo "<div class='alert alert-warning' role='alert'>No items found.</div>";
     }
-
     // Displaying the pagination links
     echo '<nav class="pagination-nav" aria-label="Page navigation">';
-     echo '<ul class="pagination justify-content-center">';
+    echo '<ul class="pagination justify-content-center">';
     // Previous page link
     if ($page > 1) {
         echo '<li class="page-item"><a class="page-link" href="?page=' . ($page - 1) . '">Previous</a></li>';
     } else {
-        echo '<li class="page-item"></li>'; // Add an empty element for alignment
+        echo '<li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>';
     }
     // Page numbers
-    for ($i = 1; $i <= $totalPages; $i++) {
+    $start = max(1, $page - 2);
+    $end = min($totalPages, $page + 2);
+    for ($i = $start; $i <= $end; $i++) {
         echo '<li class="page-item' . ($i == $page ? ' active' : '') . '"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
     }
     // Next page link
     if ($page < $totalPages) {
         echo '<li class="page-item"><a class="page-link" href="?page=' . ($page + 1) . '">Next</a></li>';
+    } else {
+        echo '<li class="page-item disabled"><a class="page-link" href="#">Next</a></li>';
     }
     echo '</ul>';
     echo '</nav>';
+
+
     ?>
 </div>
 

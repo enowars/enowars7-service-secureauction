@@ -7,7 +7,7 @@ import faker
 from httpx import AsyncClient, Response
 from typing import Optional
 from logging import LoggerAdapter
-from sympy import Symbol, solve
+import sympy 
 import gmpy2
 from bs4 import BeautifulSoup
 
@@ -69,12 +69,15 @@ async def signup(client: AsyncClient, user_name, password, user_type='REGULAR'):
             private_key = ''.join(element.text for element in private_key_elements)
             
             user_id_element = soup.find('input', id='userId')
-            user_id = user_id_element['value'] if user_id_element else None
+            user_id = user_id_element['value'] if user_id_element else None # type: ignore
             
             logger.info(f"Parsed private key: {private_key} and user_id: {user_id}")
             return private_key, user_id
-        else:   
-            return
+        
+        elif user_type == 'REGULAR':   
+            return 
+        else: 
+            logger.error(f"Invalid user type: {user_type}")
     else:
         logger.error(f"Failed to sign up the user. {status_code}")
         raise MumbleException(f"Failed to sign up the user. {status_code}")
@@ -94,6 +97,7 @@ async def login(client: AsyncClient, user_name, password, user_type='REGULAR'):
     if status_code != 302:
         logger.error(f"Failed to log in the user. {status_code}")
         raise MumbleException(f"Failed to log in the user. {status_code}")
+
 
 async def create_item(client: AsyncClient, item_name, start_price, item_type='REGULAR') -> int:
     logger.info(f"Attempting to create item: {item_name}")
@@ -121,11 +125,93 @@ async def place_bid(client: AsyncClient, item_id, bid):
         "bid_amount": bid
     }
     response = await client.post("place_bid.php", data=item_data)
-    if response.status_code == 302:
+    logger.debug(f"Response status code from place_bid.php: {response.status_code}")  # Logging the status code
+
+    if response.status_code == 200: # successful JSON response
+        try:
+            json_data =  response.json()
+            logger.debug(f"Received JSON data: {json_data}")
+            logger.debug(f"Response JSON data from place_bid.php: {json_data}")  # Log the whole JSON data
+            encrypted_bid = json_data.get('encrypted_bid', None)  # Use get() method to avoid KeyErrors
+            if encrypted_bid:
+                logger.debug(f"Place bid item_id: {item_id}, bid_amount: {bid}, Received encrypted bid: {encrypted_bid}")
+            else:
+                logger.debug(f"encrypted_bid field not found in the response data")
+            return encrypted_bid
+        except Exception as e:
+            logger.error(f"Error while processing response: {e}")
+    elif response.status_code == 302: # 302 is the status code for a redirection (non-PREMIUM users)
+        logger.debug(f"Redirected for item_id: {item_id}, bid_amount: {bid}")  # Logging the redirection
         return
     else:
-        raise MumbleException("Failed to create the item.")
+        raise MumbleException("Failed to place bid.")
+
+
+async def scrape_webpage(client: AsyncClient, logger: LoggerAdapter):
     
+    url = "user_index.php"  # The URL of the webpage to scrape
+
+    logger.info("scrape_webpage: Starting to scrape webpage: %s", url)
+
+    response = await client.get(url)
+
+    # Check if request was successful
+    if response.status_code != 200:
+        logger.error("scrape_webpage: Failed to fetch page: %s", url)
+        raise Exception(f"Failed to fetch page: {url}")
+
+    logger.info("scrape_webpage: Successful request. Parsing content with BeautifulSoup.")
+
+    # Parse the content of the request with BeautifulSoup
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find the table
+    table = soup.find('table')
+
+    if table is None:
+        logger.error("scrape_webpage: No table found in the page.")
+        raise Exception("No table found in the page.")
+
+    # Find all table rows
+    rows = table.find_all('tr')
+
+    if not rows:
+        logger.error("scrape_webpage: No rows found in the table.")
+        raise Exception("No rows found in the table.")
+
+    start_prices = []
+    RSA_E = ''
+    RSA_N = ''
+
+    logger.info("scrape_webpage: Iterating through table rows.")
+
+    # Iterate through all rows
+    for row in rows:
+        # Find all columns in each row
+        cols = row.find_all('td')
+        
+        # If there are no 'td' elements, skip this row
+        if not cols:
+            continue
+
+        # Strip the text of each column
+        cols = [col.text.strip() for col in cols]
+        
+        # If item type is not PREMIUM, skip this row
+        if cols[3] != 'PREMIUM':  # assuming 'Item Type' is the 4th column
+            continue
+
+        logger.info("scrape_webpage: Found a PREMIUM item.")
+
+        # Append the start price to the list
+        start_prices.append(cols[2])  # assuming 'Start Price' is the 3rd column
+        RSA_E = cols[6]  # assuming 'RSA_E' is the 7th column
+        RSA_N = cols[7]  # assuming 'RSA_N' is the 8th column
+
+    logger.info("scrape_webpage: Finished scraping. Found %s PREMIUM items.", len(start_prices))
+
+    return start_prices, RSA_E, RSA_N
+
 
 @checker.putflag(0)
 async def putflag_note(
@@ -147,7 +233,7 @@ async def putflag_note(
     await db.set("item", (user_name, password, item_name))
 
     return user_name
-
+    
 
 @checker.getflag(0)
 async def getflag_note(
@@ -160,11 +246,11 @@ async def getflag_note(
         user_name, password, item_name = await db.get("item")
     except KeyError:
         raise MumbleException("Item missing")
+    
     await login(client, user_name, password, 'REGULAR')
 
     response = await client.get(f"my_profile.php")
     logger.debug(response.text)
-
     assert_in(task.flag, response.text, "Flag missing")
 
 
@@ -185,7 +271,7 @@ async def exploit(
     await signup(client, user_name, password)
 
     # SQL Injection payload, returning all records regardless of the user_id.
-    SQL_INJECTION_PAYLOAD = "1 OR 1"
+    SQL_INJECTION_PAYLOAD = "746a759a17e08411460812f472483104"
     exploit_url = f"/my_profile.php?user_id={SQL_INJECTION_PAYLOAD}"
 
     response = await client.get(exploit_url)
@@ -202,6 +288,7 @@ async def exploit(
     else:
         logger.warning("Exploit request failed.")
         raise MumbleException("Exploit Failed!")
+
 
 if __name__ == "__main__":
     checker.run()

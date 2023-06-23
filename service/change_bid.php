@@ -17,7 +17,7 @@ $item = new Item($con);
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data
     $itemId = $_POST['item_id'];
-    $userId = $_POST['user_id'];
+    $userId = $user_data['user_id']; // Get the user ID from the session
     $newBid = $_POST['new_bid'];
 
     // Validate form data
@@ -25,9 +25,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Please fill in all fields.");
     }
 
-    // Ensure user can only change their own bids
-    if ($userId != $user_data['user_id']) {
-        die("You can only change your own bids.");
+    // Bid should be a positive number 
+    if ($newBid <= 0 ) {
+        die("Bid amount cannot be negative.");
     }
 
     // Get the item details
@@ -48,8 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: ".$_SERVER['HTTP_REFERER']);
     } 
     else {
-        // TODO
-        echo "There was an error updating your bid, Volkan. Not really!!! Your attempted new bid was: " . $newBid;
+        echo "There was an error updating your bid. Your attempted new bid was: " . $newBid;
     }
 } else {
         echo "No form data received.";

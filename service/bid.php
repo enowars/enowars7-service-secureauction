@@ -10,7 +10,6 @@
             $this->mysqli = $con;
         }
 
-
         // Function to retrieve the highest bid for a given item
         public function getHighestBid($itemId) {
             $stmt = $this->mysqli->prepare("SELECT MAX(amount) as highest_bid FROM bids WHERE item_id = ?");
@@ -29,7 +28,6 @@
                 return false;
             }
         }
-
 
         // Function to retrieve the highest bid placed by a specific user for a given item
         public function getUserHighestBid($itemId, $userId) {
@@ -54,7 +52,6 @@
             }
         }
 
-
         // Function to get the highest bid placed by a specific user for a given item
         public function getHighestBidByUser($itemId, $userId) {
             // Prepare the query with placeholders for the item ID and user ID
@@ -70,19 +67,21 @@
             return 0;
         }
 
-
         // Function to encrypt a message using RSA encryption
         public function rsaEncrypt($message, $publicKey) {
+            if ($publicKey === null || empty($publicKey['public_key_e']) || empty($publicKey['public_key_n'])) {
+                throw new Exception("Public key is not available. Because the user is created without public key");
+            }
             // Convert the message into bytes and then to a hex string
             $messageHex = bin2hex($message);
             // Convert the hex string into a GMP number
             $messageNum = gmp_init($messageHex, 16);
+            
             // Perform the encryption
             $encrypted = gmp_powm($messageNum, gmp_init($publicKey['public_key_e'], 10), gmp_init($publicKey['public_key_n'], 10));
             // Convert the result to a string and return it
             return gmp_strval($encrypted);
         }
-        
         
         public function decryptBid($encrypted_bid, $privateKey) {
             // Check if private_key_d and public_key_n are set
@@ -113,9 +112,16 @@
             $stmt->execute();
             $itemResult = $stmt->get_result();
             $item = $itemResult->fetch_assoc();
-        
-            // Check if this is a premium item or a regular item
-            if ($item['item_type'] === 'PREMIUM') {
+
+            // Fetch the user details
+            $stmt = $this->mysqli->prepare("SELECT * FROM users WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $userResult = $stmt->get_result();
+            $user = $userResult->fetch_assoc();
+
+            // Premium user should be able to place encrypted bid for regular items and premium items
+            if ($user['user_type'] === 'PREMIUM') {
                 // Create an instance of the User class
                 $user = new User($this->mysqli); // Pass the database connection
         
@@ -133,15 +139,16 @@
                 // Return the encrypted amount
                 return $encryptedAmount;
             } else {
-                // Place a normal (unencrypted) bid
+                // Regular users place normal (unencrypted) bid, 
                 $stmt = $this->mysqli->prepare("INSERT INTO bids (user_id, item_id, amount) VALUES (?, ?, ?)");
                 $stmt->bind_param("iis", $userId, $itemId, $amount);
                 $stmt->execute();
+                return true;
             }
         }
     }
 
-
+        // Global function to get the total number of bids
         function getTotalBids($mysqli){
             $stmt = $mysqli->prepare("SELECT COUNT(*) as total_bids FROM bids");
             $stmt->execute(); 
