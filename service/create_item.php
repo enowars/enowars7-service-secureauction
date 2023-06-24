@@ -37,7 +37,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             // Create a new Item object
             $item = new Item($con);
-        
             // Create the item
             $item_id = $item->createItemWithBid(
                 $user_data["user_id"],

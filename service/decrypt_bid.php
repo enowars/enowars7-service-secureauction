@@ -97,4 +97,3 @@ $decrypted_bid = $bid->decryptBid($amount, $keys);
     </div>
 </body>
 </html>
-

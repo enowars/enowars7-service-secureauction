@@ -83,6 +83,7 @@ $totalPages = ceil($totalItems / $itemsPerPage);
                 <input type="hidden" name="item_id" value="' . $row['id'] . '">
                 <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
                 <input type="hidden" name="start_price" value="' . $row['start_price'] . '">
+                <input type="hidden" name="bidamount" value="' . $row['bidamount'] . '">
                 <input type="hidden" name="public_key_e" value="' . $row['public_key_e'] . '">
                 <input type="hidden" name="public_key_n" value="' . $row['public_key_n'] . '">
                 <input type="password" name="private_key_d" placeholder="Enter your private key" required>

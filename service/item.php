@@ -52,7 +52,6 @@ class Item
         }
     }
 
-
     // Get the items, the bids for that item and the e and n values for the user who placed the bid
     public function getItems($page, $itemsPerPage, $userType)
     {
