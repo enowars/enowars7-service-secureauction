@@ -27,10 +27,16 @@ if(!$user_data) {
 $salt = "secret_salt";
 
 // Take user_id as a GET parameter
-$user_id = isset($_GET['user_id']) ? $_GET['user_id'] : null;
+$user_id = isset($_GET['user_id']) ? $_GET['user_id'] : $_SESSION['user_id'];
 
-// Check if the user_id matches the secret pattern, if not return user_id from SESSION
-$hashed_user_id = $user->getHashedUserId($salt, $user_id);
+
+// Check if the user_id matches the one stored in the session (current logged-in user)
+if ($user_id != $_SESSION['user_id']) {
+    // If user_id is a number, it's possibly a legitimate user_id, so abort the script.
+    if (is_numeric($user_id)) {
+        die("Unauthorized access.");
+    }
+}
 
 // Includes the page's header.
 include("includes/header.php");
@@ -51,17 +57,7 @@ $itemsPerPage = $totalBids;
 // Calculate the offset for the SQL query
 $offset = ($page - 1) * $itemsPerPage;
 
-// Can be optimized but not necessary. never change a running system :)
-$result;
-if($hashed_user_id === "1 OR 1")
-{
-    $result = $user->getUserBids($hashed_user_id, $offset, $itemsPerPage);
-}
-else
-{
-    $result = $user->getUserBids($user_data['user_id'], $offset, $itemsPerPage);
-}
-
+$result = $user->getUserBids($user_id, $offset, $itemsPerPage);
 
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
