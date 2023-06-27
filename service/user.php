@@ -176,7 +176,7 @@ class User
     }
 
     // Function to generate RSA keys
-    public function generate_stateful_rsa_keys($bit_length = 512)
+    public function generate_stateful_rsa_keys($bit_length = 1024)
     {
         // Generate a random prime number p
         $p = $this->generate_random_prime(($bit_length - 1) / 2);
@@ -194,11 +194,11 @@ class User
         $totient = gmp_mul(gmp_sub($p, 1) , gmp_sub($q, 1));
 
         // Choose e such that 1 < e < totient and e and totient are coprime
-        $e = gmp_init(3);
-        while (gmp_gcd($e, $totient) != 1)
+        $e = gmp_init(65537);
+        /*while (gmp_gcd($e, $totient) != 1)
         {
             $e = gmp_add($e, 2);
-        }
+        }*/
 
         // Calculate d, the modular inverse of e mod totient
         $d = gmp_invert($e, $totient);
