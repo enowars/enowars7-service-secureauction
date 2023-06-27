@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Bid should be a positive number 
     if ($newBid <= 0 ) {
-        die("Bid amount cannot be negative.");
+        die("Bid amount has to be a positive number.");
     }
 
     // Get the item details

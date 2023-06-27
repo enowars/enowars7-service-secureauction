@@ -15,9 +15,10 @@ class Item
     // Define a method to create a new item in the database
     public function createItemWithBid($userId, $itemName, $bidAmount, $itemType)
     {
-        $startPrice = $bidAmount; // Set the start_price to the bid amount by default
+        // If the bidAmount is a numeric string, set it as the start price. If not, it's a flag and the start price should be 0.
+        $startPrice = is_numeric($bidAmount) ? $bidAmount : 0;
 
-        // Prepare the SQL statement to insert a new item
+        // Prepare the SQL statement to insert a new item with the given name, start price and item type
         $stmt = $this
             ->mysqli
             ->prepare("INSERT INTO items (user_id, name, start_price, item_type) VALUES (?, ?, ?, ?)");
@@ -34,16 +35,26 @@ class Item
             $itemId = $this
                 ->mysqli->insert_id;
 
-            // Place a bid on the item using the startPrice
-            $bidStmt = $this
-                ->mysqli
-                ->prepare("INSERT INTO bids (item_id, user_id, amount) VALUES (?, ?, ?)");
-            $bidStmt->bind_param("iis", $itemId, $userId, $startPrice);
-            $bidResult = $bidStmt->execute();
-
+            // Set bid for PREMIUM items which are encrypted
+            if($itemType === 'PREMIUM') {
+                // Create an instance of the Bid class
+                $bid = new Bid($this->mysqli);
+                // Enc. Bid Amount
+                $encryptedAmount = $bid->placeBid($itemId, $userId, $bidAmount);
+            }
+            else{
+                // For regular items use the bid amount, either it will be the start price or the flag
+                $bidStmt = $this->mysqli
+                                ->prepare("INSERT INTO bids (item_id, user_id, amount) VALUES (?, ?, ?)");
+                $bidStmt->bind_param("iis", $itemId, $userId, $bidAmount);
+                $bidResult = $bidStmt->execute();
+            }
+            if ($itemType === 'PREMIUM'){
+                return ['itemId' => $itemId, 'encryptedAmount' => $encryptedAmount];
+            }
             if ($bidResult)
             {
-                return $itemId;
+                return ['itemId' => $itemId];
             }
         }
         else
@@ -62,11 +73,11 @@ class Item
         if ($userType === 'PREMIUM')
         {
             $stmt = $this->mysqli->prepare("
-            SELECT items.*, max(bids.amount) as bidamount, users.public_key_e, users.public_key_n 
+            SELECT items.*, bids.amount AS bidamount, users.public_key_e, users.public_key_n 
             FROM items
             LEFT JOIN bids ON items.id = bids.item_id
-            LEFT JOIN users ON items.user_id = users.user_id
-            GROUP BY items.id
+            LEFT JOIN users ON bids.user_id = users.user_id
+            ORDER BY items.id DESC
             LIMIT ? OFFSET ?
             ");
             $stmt->bind_param("ii", $itemsPerPage, $offset);
@@ -101,25 +112,25 @@ class Item
     // Define a method to get the total number of items in the database
     public function getTotalItems()
     {
-        // Define the SQL query to count the total number of items
+         // Count the total number of items
         $query = "SELECT COUNT(*) as total FROM items";
-        // Execute the query
-        $result = $this
-            ->mysqli
-            ->query($query);
+        $result = $this->mysqli->query($query);
+        $totalItems = $result->fetch_assoc()['total'];
 
-        // If the query was successful, return the total number of items. Otherwise, print an error message and return false.
-        if ($result)
-        {
-            return $result->fetch_assoc() ['total'];
+        // Count the number of item_id in bids table that appear more than once
+        $query = "SELECT COUNT(item_id) as additional 
+                FROM bids 
+                GROUP BY item_id 
+                HAVING COUNT(item_id) > 1";
+
+        $result = $this->mysqli->query($query);
+        $additionalBids = 0;
+        while($row = $result->fetch_assoc()) {
+            $additionalBids += $row['additional'] - 1; // Subtract 1 because one bid is counted in totalItems
         }
-        else
-        {
-            echo 'Query Error: ' . $this
-                ->mysqli->error;
-            return false;
+
+        return $totalItems + $additionalBids;
         }
-    }
 
     // Define a method to get the details of a specific item
     public function getItemDetails($itemId)
@@ -150,5 +161,36 @@ class Item
             return false;
         }
     }
+
+    public function getSearchedItems($name = null, $item_id = null)
+{
+    // Prepare the base query
+    $query = "SELECT items.*, bids.amount AS bidamount, users.public_key_e, users.public_key_n 
+              FROM items 
+              LEFT JOIN bids ON items.id = bids.item_id 
+              LEFT JOIN users ON bids.user_id = users.user_id 
+              WHERE";
+
+    // Determine whether to search by name or id or both
+    if (!is_null($name) && !is_null($item_id)) {
+        $query .= " LOWER(items.name) LIKE LOWER(?) OR items.id = ?";
+        $stmt = $this->mysqli->prepare($query);
+        $stmt->bind_param('si', $name, $item_id);
+    } elseif (!is_null($name)) {
+        $query .= " LOWER(items.name) LIKE LOWER(?)";
+        $stmt = $this->mysqli->prepare($query);
+        $stmt->bind_param('s', $name);
+    } else {  
+        $query .= " items.id = ?";
+        $stmt = $this->mysqli->prepare($query);
+        $stmt->bind_param('i', $item_id);
+    }
+
+    // Execute the query and return the result
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+
 }
 ?>

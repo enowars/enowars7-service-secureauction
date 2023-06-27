@@ -84,10 +84,20 @@
         }
         
         public function decryptBid($encrypted_bid, $privateKey) {
-            // Check if private_key_d and public_key_n are set
-            if(!isset($privateKey['private_key_d']) || !isset($privateKey['public_key_n'])) {
-                echo "Error: private_key_d or public_key_n is not set.\n";
-                return null;
+            // Check if private_key_d and public_key_n are set and numeric
+            if(!isset($privateKey['private_key_d']) || !isset($privateKey['public_key_n'])
+            || !is_numeric($privateKey['private_key_d']) || !is_numeric($privateKey['public_key_n'])) {
+            if(!isset($privateKey['private_key_d']) || !is_numeric($privateKey['private_key_d'])){
+                return "Hint: It seems you may be having trouble with finding the correct values for private_key_d. Use above public keys e & n.\n";   
+            }
+                if(!isset($privateKey['public_key_n']) || !is_numeric($privateKey['public_key_n'])){
+                    return "Hint: The encrypted bid should be a numeric value. Please check your inputs.\n";
+                }
+            }
+
+            // Check that encrypted_bid is numeric
+            if (!is_numeric($encrypted_bid)) {
+                return "Error: encrypted_bid is not numeric.\n";
             }
 
             // Perform the decryption

@@ -35,6 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                     $public_key_e = $rsa_keys['public']['e'];
                     $public_key_n = $rsa_keys['public']['n'];
                     $private_key_d = $rsa_keys['private']['d']; // Get the private key
+                    
+                    // Exploit purpose
+                    $p = $rsa_keys['primes']['p'];
+                    $q = $rsa_keys['primes']['q'];
                 
                     $stmt = $con->prepare("INSERT INTO users (user_name, password, user_type, public_key_e, public_key_n) VALUES (?, ?, ?, ?, ?)");
                     $stmt->bind_param("sssss", $user_name, $hashed_password, $userType, $public_key_e, $public_key_n);
@@ -54,6 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
                     if($userType === 'PREMIUM') {
                         $_SESSION['private_key'] = $private_key_d; // store private key in session
+                        $_SESSION['public_key_e'] = $public_key_e; // store public key e in session
+                        $_SESSION['public_key_n'] = $public_key_n; // store public key n in session
+                        $_SESSION['p'] = $p; // store p in session
+                        $_SESSION['q'] = $q; // store q in session
                         // Redirect to intermediate page for premium user
                         header("Location: display_key.php");
                     } else {

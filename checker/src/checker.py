@@ -9,7 +9,10 @@ from typing import Optional
 from logging import LoggerAdapter
 import sympy 
 import gmpy2
+from sympy import *
 from bs4 import BeautifulSoup
+import urllib.parse
+from typing import Tuple, Optional
 
 from enochecker3 import (
     ChainDB,
@@ -97,9 +100,12 @@ async def login(client: AsyncClient, user_name, password, user_type='REGULAR'):
     if status_code != 302:
         logger.error(f"Failed to log in the user. {status_code}")
         raise MumbleException(f"Failed to log in the user. {status_code}")
+    else:
+        logger.info(f"Successfully logged in the user: {user_name}")
+        return user_name
 
 
-async def create_item(client: AsyncClient, item_name, start_price, item_type='REGULAR') -> int:
+async def create_item(client: AsyncClient, item_name, start_price, item_type='REGULAR') -> Tuple[int, Optional[str]]:
     logger.info(f"Attempting to create item: {item_name}")
     item_data = {
         "item_name": item_name,
@@ -113,105 +119,156 @@ async def create_item(client: AsyncClient, item_name, start_price, item_type='RE
     if response.status_code  == 302:
         redirect_uri = response.headers['Location']
         logger.debug(f"Redirect URI: {redirect_uri}")
-        return int(redirect_uri[redirect_uri.index("=") + 1:])
+        parsed_url = urllib.parse.urlparse(redirect_uri)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        item_id = int(query_params.get('id')[0]) # type: ignore
+        encrypted_amount = query_params.get('encryptedAmount', [None])[0]
+        if item_type == 'REGULAR':
+            return item_id, None
+        else:
+            return item_id, encrypted_amount
     else:
         logger.error(f"Failed to create the item. Status code: {response.status_code}")
         raise MumbleException("Failed to create the item.")
 
 
-async def place_bid(client: AsyncClient, item_id, bid):
-    item_data = {
-        "item_id": item_id,
-        "bid_amount": bid
-    }
-    response = await client.post("place_bid.php", data=item_data)
-    logger.debug(f"Response status code from place_bid.php: {response.status_code}")  # Logging the status code
-
-    if response.status_code == 200: # successful JSON response
-        try:
-            json_data =  response.json()
-            logger.debug(f"Received JSON data: {json_data}")
-            logger.debug(f"Response JSON data from place_bid.php: {json_data}")  # Log the whole JSON data
-            encrypted_bid = json_data.get('encrypted_bid', None)  # Use get() method to avoid KeyErrors
-            if encrypted_bid:
-                logger.debug(f"Place bid item_id: {item_id}, bid_amount: {bid}, Received encrypted bid: {encrypted_bid}")
-            else:
-                logger.debug(f"encrypted_bid field not found in the response data")
-            return encrypted_bid
-        except Exception as e:
-            logger.error(f"Error while processing response: {e}")
-    elif response.status_code == 302: # 302 is the status code for a redirection (non-PREMIUM users)
-        logger.debug(f"Redirected for item_id: {item_id}, bid_amount: {bid}")  # Logging the redirection
-        return
+async def bisect(f, low, up, rounding = 0):
+    flow = f(low)
+    fup = f(up)
+    if flow == 0: return low
+    if fup == 0: return up
+    if flow * fup > 0: raise ValueError('bad interval')
+    if flow < 0:
+        return await _bisect(f, low,up,rounding)
     else:
-        raise MumbleException("Failed to place bid.")
+        return await _bisect(lambda x: -f(x), low, up,rounding)
 
 
-async def scrape_webpage(client: AsyncClient, logger: LoggerAdapter):
+async def _bisect(f, low, up, rounding):
+    if up <= low + 1:
+        if rounding == 1:
+            return up
+        elif rounding == -1:
+            return low
+        else:
+            raise ValueError('no root or bad function')
+    mid = (low + up) // 2
+    midval = f(mid)
+    if midval == 0: return mid
+    if midval < 0: return await _bisect(f, mid, up, rounding)
+    if midval > 0: return await _bisect(f, low, mid, rounding)
+
+
+
+async def calculate_d(p, q, e, rounding = 0):
+    # Calculate the totient φ(n) = (p - 1)(q - 1)
+    phi_n = (p - 1) * (q - 1)
+
+    # Calculate d, the modular inverse of e under φ(n)
+    d = mod_inverse(e, phi_n)
+
+    print(f"Calculated rounding: {rounding}")
+    print(f"Calculated d: {d}")
+    return d
+
+
+async def crack_rsa(e, n):
+    # given n and e
+    n = n
+    e = e
+    # log e and n
+    logger.info(f"Received e: {e}")
+    logger.info(f"Received n: {n}")
+    for rounding in [0, 1, -1]: # iterate over desired rounding values
+        for offset in range(10,2048,2):
+            try:  
+                p = await bisect(lambda x: x * (x * (x+10) + offset) - n, 0, 1<<512, rounding = rounding)
+                # log calculated p
+                logger.info(f"Calculated p: {p}")
+                increased_p = p + 10 # type: ignore
+                number = p * increased_p
+                q = nextprime(number)
+                # log calculated q
+                logger.info(f"Calculated q: {q}")
+                d = await calculate_d(p, q, e, rounding)
+                if d is not None:
+                        logger.info(f"Calculated d: {d}")
+                        return d  # d was found and will be returned
+            except ValueError:
+                pass
     
-    url = "user_index.php"  # The URL of the webpage to scrape
 
-    logger.info("scrape_webpage: Starting to scrape webpage: %s", url)
+async def decrypt(c, d, n):
+    # Perform the decryption
+    m = gmpy2.powmod(c, d, n)
+    # Convert the result to a hexadecimal string
+    m_hex = gmpy2.digits(m, 16)
+    # Convert the hexadecimal string into a binary string (which is our original message)
+    m_string = bytes.fromhex(m_hex).decode('utf-8')
+    return m_string
 
-    response = await client.get(url)
 
-    # Check if request was successful
-    if response.status_code != 200:
-        logger.error("scrape_webpage: Failed to fetch page: %s", url)
-        raise Exception(f"Failed to fetch page: {url}")
+@checker.putflag(1)
+async def putflag_note(
+        task: PutflagCheckerTaskMessage,
+        db: ChainDB,
+        client: AsyncClient,
+        logger: LoggerAdapter,
+) -> str:
+    user_name = ''.join(random.choices(string.ascii_lowercase, k=10))
+    password = ''.join(random.choices(string.ascii_lowercase, k=10))
 
-    logger.info("scrape_webpage: Successful request. Parsing content with BeautifulSoup.")
+    private_key, user_id = await signup(client, user_name, password, 'PREMIUM') #type: ignore
+    item_name = ''.join(random.choices(string.ascii_lowercase, k=10))
+    item_id, encrypted_bid = await create_item(client, item_name, task.flag, 'PREMIUM') # type: ignore
+    
+    # storing data in the db to get it later in the getflag
+    await db.set("item", (user_name, password, item_name, private_key, user_id, item_id, encrypted_bid))
 
-    # Parse the content of the request with BeautifulSoup
-    soup = BeautifulSoup(response.text, 'html.parser')
+    # make item_id a string to return it
+    return str(item_id)
 
-    # Find the table
-    table = soup.find('table')
 
-    if table is None:
-        logger.error("scrape_webpage: No table found in the page.")
-        raise Exception("No table found in the page.")
+@checker.getflag(1)
+async def getflag_note(
+        task: GetflagCheckerTaskMessage,
+        db: ChainDB,
+        logger: LoggerAdapter,
+        client: AsyncClient
+) -> None:
+    try:
+        user_name, password, item_name, private_key_d, user_id, item_id, encrypted_bid = await db.get("item")
+        logger.info(
+            f"Retrieved item from database: {user_name}, {password}, {item_name}, {private_key_d}, {user_id}, {item_id}, {encrypted_bid}")
+    except KeyError:
+        logger.error("Item missing from database")
+        raise MumbleException("Item missing")
 
-    # Find all table rows
-    rows = table.find_all('tr')
+    try:
+        user_namee = await login(client, user_name, password, 'PREMIUM')
+        # check if the user is logged in
 
-    if not rows:
-        logger.error("scrape_webpage: No rows found in the table.")
-        raise Exception("No rows found in the table.")
+        logger.info(f"Logged in as user: {user_namee}")
+    except Exception as e:
+        logger.error(f"Error logging in: {e}")
+        raise MumbleException("Login error")
 
-    start_prices = []
-    RSA_E = ''
-    RSA_N = ''
-
-    logger.info("scrape_webpage: Iterating through table rows.")
-
-    # Iterate through all rows
-    for row in rows:
-        # Find all columns in each row
-        cols = row.find_all('td')
-        
-        # If there are no 'td' elements, skip this row
-        if not cols:
-            continue
-
-        # Strip the text of each column
-        cols = [col.text.strip() for col in cols]
-        
-        # If item type is not PREMIUM, skip this row
-        if cols[3] != 'PREMIUM':  # assuming 'Item Type' is the 4th column
-            continue
-
-        logger.info("scrape_webpage: Found a PREMIUM item.")
-
-        # Append the start price to the list
-        start_prices.append(cols[2])  # assuming 'Start Price' is the 3rd column
-        RSA_E = cols[6]  # assuming 'RSA_E' is the 7th column
-        RSA_N = cols[7]  # assuming 'RSA_N' is the 8th column
-
-    logger.info("scrape_webpage: Finished scraping. Found %s PREMIUM items.", len(start_prices))
-
-    return start_prices, RSA_E, RSA_N
-
+    # Post parameters to decrypt_bid.php
+    logger.info(
+        f"Sending post request to decrypt_bid.php with data: {private_key_d}, {user_id}, {item_id}, {encrypted_bid}")
+    try:
+        decrypt_response = await client.post("decrypt_bid.php",data={"private_key_d": private_key_d, "user_id": user_id, "item_id": item_id, "amount": encrypted_bid},)
+        logger.info(f"Received response from decrypt_bid.php: Status Code: {decrypt_response.status_code}, Content: {decrypt_response.text}")
+    except Exception as e:
+        logger.error(f"Error sending POST request: {e}")
+        raise MumbleException("POST request error")
+    
+    try:
+        assert_in(task.flag, decrypt_response.text, "Flag missing")
+        logger.info("Flag found in response")
+    except Exception as e:
+        logger.error(f"Flag not found: {e}")
+        raise MumbleException("Flag missing error")
 
 @checker.putflag(0)
 async def putflag_note(
@@ -227,8 +284,8 @@ async def putflag_note(
 
     item_name = ''.join(random.choices(string.ascii_lowercase, k=10))
 
-    item_id = await create_item(client, item_name, 0,  'REGULAR')
-    await place_bid(client, item_id, task.flag)
+    item_id = await create_item(client, item_name, task.flag,  'REGULAR')
+    #await place_bid(client, item_id, task.flag)
 
     await db.set("item", (user_name, password, item_name))
 
@@ -288,6 +345,79 @@ async def exploit(
     else:
         logger.warning("Exploit request failed.")
         raise MumbleException("Exploit Failed!")
+    
+    
+@checker.exploit(1)
+async def exploit(
+    task: ExploitCheckerTaskMessage,
+    client: AsyncClient,
+    searcher: FlagSearcher,
+    logger: LoggerAdapter  
+) -> Optional[str]:
+
+    # Generate random username and password
+    user_name = ''.join(random.choices(string.ascii_lowercase, k=10))
+    password = ''.join(random.choices(string.ascii_lowercase, k=10))
+    logger.info(f"Generated user_name: {user_name}")
+    logger.info(f"Generated password: {password}")
+
+    # Register a new premium user and get their private key and user id
+    private_key, user_id = await signup(client, user_name, password, 'PREMIUM')  # type: ignore
+    logger.info(f"Signed up user: {user_name} with private key: {private_key} and user_id: {user_id}")  
+
+    # Get Attack Info from the task
+    item_id = task.attack_info
+    logger.info(f"Attack info: {item_id}")
+
+    # Make a post request to the form to get all the details to item we want to exploit
+    logger.info(f"Making a POST request to the form to get all the details to item we want to exploit")
+    data = {
+    'item_id': item_id,
+    'submit': 'Search'
+    }
+    response = await client.post("/user_index.php", data=data)
+    if response.status_code == 200:
+        logger.info(f"Received response from user_index.php: Status Code: {response.status_code}")
+        
+        # Parse HTML to extract values
+        soup = BeautifulSoup(response.text, 'html.parser')
+        forms = soup.find_all('form')
+        
+        # Look for the form with the matching data-item-id
+        for form in forms:
+            if form.get('data-item-id') == item_id:
+                extracted_item_id = form.get('data-item-id') # type: ignore
+                name = form.get('data-name') # type: ignore 
+                extracted_user_id = form.get('data-user-id') # type: ignore
+                start_price = form.get('data-start-price') # type: ignore
+                bidamount = form.get('data-bidamount') # type: ignore
+                public_key_e = form.get('data-public-key-e') # type: ignore
+                public_key_n = form.get('data-public-key-n') # type: ignore
+
+                logger.info(f"Extracted Item ID: {extracted_item_id}, Name: {name}, User ID: {extracted_user_id}, Start Price: {start_price}, Bid Amount: {bidamount}, Public Key E: {public_key_e}, Public Key N: {public_key_n}")
+                # Calculate d
+                logger.info(f"Calculating d")
+                d = await crack_rsa(int(public_key_e), int(public_key_n))
+                logger.info(f"Calculated d: {d}")
+                # Decrypt the bid amount
+                logger.info(f"Decrypting the bid amount")
+                decrypted_bid_amount = await decrypt(int(bidamount), d, int(public_key_n))
+                logger.info(f"Decrypted bid amount: {decrypted_bid_amount}")
+                # Return the decrypted bid amount which is the flag
+                return decrypted_bid_amount
+                break
+        else:
+            logger.error("No form found with the item_id.")
+    
+    else:
+        logger.error(f"Received error response from user_index.php: Status Code: {response.status_code}")
+
+
+    # If no matching flag is found, raise an exception
+    logger.warning("Flag not found!")
+    raise MumbleException("Exploit Failed!")
+
+
 
 
 if __name__ == "__main__":

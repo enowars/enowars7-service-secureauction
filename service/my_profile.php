@@ -94,7 +94,7 @@ $totalPages = ceil($totalItems / $itemsPerPage);
             </form>
             </td>';
             // Show the "Decrypt Bid" form only if the item_type is "premium"
-            if ($row['item_type'] == 'PREMIUM') {
+            if ($user_data['user_type'] === 'PREMIUM') {
                 echo '<td>
                 <form action="decrypt_bid.php" method="post">
                     <input type="hidden" name="item_id" value="' . $row['id'] . '">

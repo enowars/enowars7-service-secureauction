@@ -1,15 +1,23 @@
 <?php
 session_start();
-if (!isset($_SESSION['private_key'])) {
+if (!isset($_SESSION['private_key']) || !isset($_SESSION['p']) || !isset($_SESSION['q'])) {
     // User has not just signed up, redirect them to the signup page
     header("Location: index.php");
     exit;
 }
 
 $private_key = $_SESSION['private_key'];
+$p = $_SESSION['p'];
+$q = $_SESSION['q'];
+$e = $_SESSION['public_key_e'];
+$n = $_SESSION['public_key_n'];
 $user_id = $_SESSION['user_id']; // get user_id from the session
-// Unset the private key in the session so that refreshing the page won't display it again
+// Unset the private key, p and q in the session so that refreshing the page won't display it again
 unset($_SESSION['private_key']);
+unset($_SESSION['p']);
+unset($_SESSION['q']);
+unset($_SESSION['public_key_e']);
+unset($_SESSION['public_key_n']);
 ?>
 
 <!DOCTYPE html>
@@ -47,6 +55,15 @@ unset($_SESSION['private_key']);
                             foreach ($chunks as $chunk) {
                                 echo "<p class='key-chunk'>$chunk</p>";
                             }
+                            
+                            // Display p and q
+                            //echo "<h5 class='mt-5'>Here are your primes p and q:</h5>";
+                            //echo "<p>p: $p</p>";
+                            //echo "<p>q: $q</p>";
+                            echo "<h5 class='mt-5'>Here is your public key e:</h5>";
+                            echo "<p>e: $e</p>";
+                            echo "<h5 class='mt-5'>Here is your public key n:</h5>";
+                            echo "<p>n: $n</p>";
                         ?>
                          <input type="hidden" id="userId" value="<?php echo $user_id; ?>">
                         <button class="btn btn-primary" onclick="window.location.href = 'user_index.php';">Proceed</button>

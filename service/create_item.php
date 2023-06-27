@@ -38,16 +38,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Create a new Item object
             $item = new Item($con);
             // Create the item
-            $item_id = $item->createItemWithBid(
+            $result = $item->createItemWithBid(
                 $user_data["user_id"],
                 $item_name,
                 $start_price,
                 $item_type
             );
-    
-            if ($item_id) {
+
+            if ($result) {
                 // Item created successfully, redirect to the user's profile page
-                header("Location: item_detail.php?id=$item_id");
+                $item_id = $result['itemId'];
+                if (isset($result['encryptedAmount'])) {
+                    // If an encryptedAmount was returned, include it in the redirect
+                    $encryptedAmount = $result['encryptedAmount'];
+                    header("Location: item_detail.php?id=$item_id&encryptedAmount=$encryptedAmount");
+                } else {
+                    // If no encryptedAmount was returned, redirect without it
+                    header("Location: item_detail.php?id=$item_id");
+                }
                 exit();
             } else {
                 $error_message = "Failed to create the item. Please try again.";

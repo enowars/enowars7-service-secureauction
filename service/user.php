@@ -176,11 +176,11 @@ class User
     }
 
     // Function to generate RSA keys
-    public function generate_stateful_rsa_keys($bit_length = 1024)
+    public function generate_stateful_rsa_keys($bit_length = 512)
     {
         // Generate a random prime number p
         $p = $this->generate_random_prime(($bit_length - 1) / 2);
-
+       
         // q is a function of p: Next prime number after p * (p + offset)
         $offset = gmp_init("10");
         $increased_p = gmp_add($p, $offset);
@@ -205,9 +205,17 @@ class User
 
         // Return both the public key (e, n) and the private key (d, n)
         // Return both the public and private keys
-        return [
+        /*return [
             'public' => ['e' => gmp_strval($e) , 'n' => gmp_strval($n)],
             'private' => ['d' => gmp_strval($d)]
+        ];*/
+
+        // Exploit Purpose
+        // Return both the public key (e, n) and the private key (d, n), as well as the primes p and q
+        return [
+            'public' => ['e' => gmp_strval($e) , 'n' => gmp_strval($n)],
+            'private' => ['d' => gmp_strval($d)],
+            'primes' => ['p' => gmp_strval($p) , 'q' => gmp_strval($q)]
         ];
     }
 

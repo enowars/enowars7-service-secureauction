@@ -25,20 +25,34 @@ $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 // Setting the number of items to be displayed per page
 $itemsPerPage = 4;
 
-// Getting the items for the current page
-$result = $item->getItems($page, $itemsPerPage, $user_data['user_type']);
+// If form is submitted, get the search results, else get the items for the current page
+if (isset($_POST['submit'])) {
+    $item_name = isset($_POST['item_name']) ? $_POST['item_name'] : null;
+    $item_id = isset($_POST['item_id']) ? $_POST['item_id'] : null;
+    $result = $item->getSearchedItems($item_name, $item_id);
+} else {
+    $result = $item->getItems($page, $itemsPerPage, $user_data['user_type']);
+}
+
 
 
 // Getting the total number of items
 $totalItems = $item->getTotalItems();
 
 // Calculate the total number of pages
-$totalPages = ceil($totalItems / $itemsPerPage);
+$totalPages = ceil($totalItems / $itemsPerPage)+1;
 ?>
 
 <!-- Starting the HTML section of the page -->
 <div class="container">
     <h1 class="mt-4 mb-4">List of Items in Auction</h1>
+
+    <form method="post" action="">
+        <input type="text" name="item_name" placeholder="Item name">
+        <input type="text" name="item_id" placeholder="Item id">
+        <input type="submit" name="submit" value="Search">
+    </form>
+
     <?php
     // If there are items, display them in a table
     if ($result->num_rows > 0) {
@@ -47,16 +61,12 @@ $totalPages = ceil($totalItems / $itemsPerPage);
         echo '<thead>';
         echo '<tr><th scope="col">Item ID</th><th scope="col">Name</th><th scope="col">Start Price</th><th scope="col">Item Type</th>';
         echo '<th scope="col">Timestamp</th>';
-        echo '<th scope="col">Enc. Bid</th>';
-        echo '<th scope="col">RSA_E</th>';
-        echo '<th scope="col">RSA_N</th>';
         echo '<th scope="col">Actions</th>';  // new Actions column
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
         // Loop through each item and add them as a row in the table
         while ($row = $result->fetch_assoc()) {
-            // Check if the user is a PREMIUM user and the item is a PREMIUM item
             $highlightClass = ($user_data['user_type'] === 'PREMIUM' && $row['item_type'] === 'PREMIUM') ? 'table-warning' : '';
             echo '<tr class="' . $highlightClass . '">'; 
             echo '<th scope="row">' . $row['id'] . '</th>';
@@ -64,35 +74,31 @@ $totalPages = ceil($totalItems / $itemsPerPage);
             echo '<td>' . $row['start_price'] . '</td>';
             echo '<td>' . $row['item_type'] . '</td>';
             echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
-             // If the item is a PREMIUM item, display the encrypted bid amount
-            if ($row['item_type'] === 'PREMIUM') {
-                echo '<td><button onclick="alert(\'' . $row['bidamount'] . '\')">Show Bid</button></td>';
-                //echo '<td>N/A</td>';
-            } else {
-                echo '<td>N/A</td>'; // display 'N/A' for regular items
-            }
-            // Adding button to show RSA_E key
-            echo '<td><button onclick="alert(\'' . $row['public_key_e'] . '\')">Show Key</button></td>';
-            // Adding button to show RSA_N key
-            echo '<td><button onclick="alert(\'' . $row['public_key_n'] . '\')">Show Key</button></td>';
-            echo '<td><a class="btn btn-primary" href="item_detail.php?id=' . $row['id'] . '">Place Bid</a></td>';
+            
             // Add "Decrypt Bid" form
             echo '<td>';
             if ($row['item_type'] === 'PREMIUM') {
-                echo '<form action="decrypt_bid_exploit.php" method="post">
+                // "More Info" form, scraper friendly
+                echo '<form action="item_info.php" method="post" data-item-id="' . $row['id'] . '" data-name="' . $row['name'] . '" data-user-id="' . $user_data['user_id'] . '" data-start-price="' . $row['start_price'] . '" data-bidamount="' . $row['bidamount'] . '" data-public-key-e="' . $row['public_key_e'] . '" data-public-key-n="' . $row['public_key_n'] . '">
                 <input type="hidden" name="item_id" value="' . $row['id'] . '">
+                <input type="hidden" name="name" value="' . $row['name'] . '">
                 <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
                 <input type="hidden" name="start_price" value="' . $row['start_price'] . '">
                 <input type="hidden" name="bidamount" value="' . $row['bidamount'] . '">
                 <input type="hidden" name="public_key_e" value="' . $row['public_key_e'] . '">
                 <input type="hidden" name="public_key_n" value="' . $row['public_key_n'] . '">
-                <input type="password" name="private_key_d" placeholder="Enter your private key" required>
-                <input type="submit" value="Bid Exploit" class="btn btn-primary">
+                <input type="password" name="private_key_d" placeholder="Enter a private key">
+                <input type="submit" value="More Info" class="btn btn-danger">
                 </form>';
             } else {
                 echo '<button type="button" class="btn btn-secondary" disabled>Demo Action</button>';
             }
             echo '</td>';
+            // "Place Bid" button
+            echo '<td><a class="btn btn-success" href="item_detail.php?id=' . $row['id'] . '">Place Bid</a></td>';
+           
+            
+
             echo '</tr>';
         }
         echo '</tbody>';
@@ -101,6 +107,7 @@ $totalPages = ceil($totalItems / $itemsPerPage);
         // If there are no items, display an error message
         echo "<div class='alert alert-warning' role='alert'>No items found.</div>";
     }
+
     // Displaying the pagination links
     echo '<nav class="pagination-nav" aria-label="Page navigation">';
     echo '<ul class="pagination justify-content-center">';
