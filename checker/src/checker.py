@@ -346,7 +346,7 @@ async def exploit(
         logger.warning("Exploit request failed.")
         raise MumbleException("Exploit Failed!")
     
-    
+
 @checker.exploit(1)
 async def exploit(
     task: ExploitCheckerTaskMessage,
@@ -416,8 +416,6 @@ async def exploit(
     # If no matching flag is found, raise an exception
     logger.warning("Flag not found!")
     raise MumbleException("Exploit Failed!")
-
-
 
 
 if __name__ == "__main__":

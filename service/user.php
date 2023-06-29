@@ -43,7 +43,8 @@ class User
         $stmt->bind_param("i", $user_id); // Bind the user ID parameter
         $stmt->execute(); // Execute the statement
         $result = $stmt->get_result(); // Get the result
-        return $result;
+        $userData = $result->fetch_assoc(); // Fetch the result row as an associative array
+        return $userData;
     }
 
     // Function to fetch a specific set of items for a user, with support for pagination

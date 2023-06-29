@@ -45,9 +45,15 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
 
 <!-- Starting the HTML section of the page -->
 <div class="container">
-    <h1 class="mt-4 mb-4">List of Items in Auction</h1>
+    <h1 class="mt-4 mb-4  pb-1">
+        List of Items in Auction
+    </h1>
+    <h3 class="mt-1 pb-2 text-secondary">
+        Status: <?= htmlspecialchars($user_data['user_type'], ENT_QUOTES, 'UTF-8') ?>
+    </h3>
 
-    <form method="post" action="">
+
+    <form method="post" action="" class="form-padding">
         <input type="text" name="item_name" placeholder="Item name">
         <input type="text" name="item_id" placeholder="Item id">
         <input type="submit" name="submit" value="Search">
@@ -73,11 +79,12 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
             echo '<td>' . $row['name'] . '</td>';
             echo '<td>' . $row['start_price'] . '</td>';
             echo '<td>' . $row['item_type'] . '</td>';
-            echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
+             echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
+ 
             
             // Add "Decrypt Bid" form
             echo '<td>';
-            if ($row['item_type'] === 'PREMIUM') {
+            if ($user_data['user_type'] === 'PREMIUM') {
                 // "More Info" form, scraper friendly
                 echo '<form action="item_info.php" method="post" data-item-id="' . $row['id'] . '" data-name="' . $row['name'] . '" data-user-id="' . $user_data['user_id'] . '" data-start-price="' . $row['start_price'] . '" data-bidamount="' . $row['bidamount'] . '" data-public-key-e="' . $row['public_key_e'] . '" data-public-key-n="' . $row['public_key_n'] . '">
                 <input type="hidden" name="item_id" value="' . $row['id'] . '">

@@ -48,10 +48,15 @@ include("includes/header.php");
         $highest_bid = $bid->getUserHighestBid($item_id, $user_data['user_id']);
         
         if ($highest_bid) {
-            echo '<p>Your Highest Bid: ' . htmlspecialchars($highest_bid, ENT_QUOTES, 'UTF-8') . '</p>';
+            $chunks = str_split($highest_bid, 100); 
+            echo '<p>Your Highest Bid:</p>';
+            foreach ($chunks as $chunk) {
+                echo "<p class='key-chunk'>$chunk</p>";
+            }
         } else {
             echo '<p>You have not placed a bid on this item yet.</p>';
         }
+
         
         echo '<form method="POST" action="place_bid.php">';
         echo '<input type="hidden" name="item_id" value="' . htmlspecialchars($item_id, ENT_QUOTES, 'UTF-8') . '">';

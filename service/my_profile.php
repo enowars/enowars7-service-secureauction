@@ -65,26 +65,44 @@ $totalItems = $user->getUserBidsCount($user_data['user_id']);
 // Calculate total pages
 $totalPages = ceil($totalItems / $itemsPerPage);
 ?> <div class="container">
-    <h1 class="mt-4 mb-4">
-    Welcome, <?= htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') ?>
-    ID: <?= htmlspecialchars($user_data['user_id'], ENT_QUOTES, 'UTF-8') ?>
+    <h1 class="mt-2">
+        Welcome, <?= htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') ?>
     </h1>
+    <h3 class="mt-2 text-secondary">
+        Status: <?= htmlspecialchars($user_data['user_type'], ENT_QUOTES, 'UTF-8') ?>
+    </h3>
 
 <?php if ($result->num_rows > 0) {
         echo '<table class="table table-striped">';
         echo '<thead>';
-        echo '<tr><th scope="col">Item ID</th><th scope="col">Item Name</th><th scope="col">Start Price</th><th scope="col">Created At</th><th scope="col">Bid Amount</th><th scope="col">Item Type</th></tr>';
+        echo 
+            '<tr>
+                <th scope="col">Item ID</th>
+                <th scope="col">Item Name</th>
+                <th scope="col">Start Price</th>
+                <th scope="col">Item Type</th>
+                <th scope="col">Created At</th>
+                <th scope="col">Bid Amount</th>
+                <th scope="col">Actions</th> 
+            </tr>';
         echo '</thead>';
         echo '<tbody>';
         while ($row = $result->fetch_assoc()) {
-            echo '<tr>';
-            echo '<td>' . $row['id'] . '</td>';
-            echo '<td>' . $row['name'] . '</td>';
-            echo '<td>' . $row['start_price'] . '</td>';
+            $highlightClass = ($user_data['user_type'] === 'PREMIUM' && $row['item_type'] === 'PREMIUM') ? 'table-warning' : '';
+            echo '<tr class="' . $highlightClass . '">'; 
+            echo '<td class="item-id">' . $row['id'] . '</td>';
+            echo '<td class="item-name">' . $row['name'] . '</td>';
+            echo '<td class="start-price">' . $row['start_price'] . '</td>';
+            echo '<td class="item-type">' . $row['item_type'] . '</td>';
             echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
-            echo '<td>' . $row['amount'] . '</td>';
-            echo '<td>' . $row['item_type'] . '</td>';
-            
+            $amount = $row['amount'];
+            $chunks = str_split($amount, 70);
+            echo '<td class="bid-amount">';
+            foreach ($chunks as $chunk) {
+                echo '<div>' . $chunk . '</div>';
+            }
+            echo '</td>';
+            // Form to change the bid amount
             echo '<td>
             <form action="change_bid.php" method="post">
                 <input type="hidden" name="item_id" value="' . $row['id'] . '">
@@ -93,7 +111,7 @@ $totalPages = ceil($totalItems / $itemsPerPage);
                 <input type="submit" value="Change Bid" class="btn btn-primary">
             </form>
             </td>';
-            // Show the "Decrypt Bid" form only if the item_type is "premium"
+            // Show the "Decrypt Bid" form only if the user is PREMIUM
             if ($user_data['user_type'] === 'PREMIUM') {
                 echo '<td>
                 <form action="decrypt_bid.php" method="post">

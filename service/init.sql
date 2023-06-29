@@ -2,6 +2,10 @@
 CREATE DATABASE IF NOT EXISTS secureauction;
 USE secureauction;
 
+-- Set MySQL server timezone to UTC
+SET @@global.time_zone = '+00:00';
+
+
 -- Create a `users` table for storing user account information
 CREATE TABLE IF NOT EXISTS users (
   user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -25,7 +29,8 @@ CREATE TABLE IF NOT EXISTS items (
   item_type ENUM('REGULAR', 'PREMIUM') DEFAULT 'REGULAR',
   user_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
+  FOREIGN KEY (user_id) REFERENCES users(user_id),
+  INDEX (created_at)
 );
 
 -- Create a `bids` table for storing bids on auction items
@@ -36,7 +41,8 @@ CREATE TABLE IF NOT EXISTS bids (
   item_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(user_id),
-  FOREIGN KEY (item_id) REFERENCES items(id)
+  FOREIGN KEY (item_id) REFERENCES items(id),
+  INDEX (created_at)
 );
 
 -- Insert data

@@ -35,8 +35,16 @@ class Item
             $itemId = $this
                 ->mysqli->insert_id;
 
-            // Set bid for PREMIUM items which are encrypted
-            if($itemType === 'PREMIUM') {
+            // Create an instance of the User class
+            $user = new User($this->mysqli);
+            // Get the user data
+            $userData = $user->getUserById($userId);
+
+            // Check the user type
+            $userType = $userData['user_type'];
+
+            // Set encrypted bid for PREMIUM items
+            if($userType === 'PREMIUM') {
                 // Create an instance of the Bid class
                 $bid = new Bid($this->mysqli);
                 // Enc. Bid Amount
@@ -49,7 +57,7 @@ class Item
                 $bidStmt->bind_param("iis", $itemId, $userId, $bidAmount);
                 $bidResult = $bidStmt->execute();
             }
-            if ($itemType === 'PREMIUM'){
+            if ($userType === 'PREMIUM'){
                 return ['itemId' => $itemId, 'encryptedAmount' => $encryptedAmount];
             }
             if ($bidResult)
@@ -77,6 +85,7 @@ class Item
             FROM items
             LEFT JOIN bids ON items.id = bids.item_id
             LEFT JOIN users ON bids.user_id = users.user_id
+            WHERE items.created_at >= NOW() - INTERVAL 10000 MINUTE  
             ORDER BY items.id DESC
             LIMIT ? OFFSET ?
             ");
@@ -86,7 +95,10 @@ class Item
         {
             $stmt = $this
                 ->mysqli
-                ->prepare("SELECT * FROM items WHERE item_type = 'REGULAR' LIMIT ? OFFSET ?");
+                ->prepare("SELECT * FROM items WHERE item_type = 'REGULAR' 
+                                                AND created_at >= NOW() - INTERVAL 10000 MINUTE 
+                                                ORDER BY items.id DESC
+                                                LIMIT ? OFFSET ?");  /* changed here */
             $stmt->bind_param("ii", $itemsPerPage, $offset);
         }
 
@@ -163,34 +175,32 @@ class Item
     }
 
     public function getSearchedItems($name = null, $item_id = null)
-{
-    // Prepare the base query
-    $query = "SELECT items.*, bids.amount AS bidamount, users.public_key_e, users.public_key_n 
-              FROM items 
-              LEFT JOIN bids ON items.id = bids.item_id 
-              LEFT JOIN users ON bids.user_id = users.user_id 
-              WHERE";
+    {
+        // Prepare the base query
+        $query = "SELECT items.*, bids.amount AS bidamount, users.public_key_e, users.public_key_n 
+                FROM items 
+                LEFT JOIN bids ON items.id = bids.item_id 
+                LEFT JOIN users ON bids.user_id = users.user_id 
+                WHERE";
 
-    // Determine whether to search by name or id or both
-    if (!is_null($name) && !is_null($item_id)) {
-        $query .= " LOWER(items.name) LIKE LOWER(?) OR items.id = ?";
-        $stmt = $this->mysqli->prepare($query);
-        $stmt->bind_param('si', $name, $item_id);
-    } elseif (!is_null($name)) {
-        $query .= " LOWER(items.name) LIKE LOWER(?)";
-        $stmt = $this->mysqli->prepare($query);
-        $stmt->bind_param('s', $name);
-    } else {  
-        $query .= " items.id = ?";
-        $stmt = $this->mysqli->prepare($query);
-        $stmt->bind_param('i', $item_id);
+        // Determine whether to search by name or id or both
+        if (!is_null($name) && !is_null($item_id)) {
+            $query .= " LOWER(items.name) LIKE LOWER(?) OR items.id = ?";
+            $stmt = $this->mysqli->prepare($query);
+            $stmt->bind_param('si', $name, $item_id);
+        } elseif (!is_null($name)) {
+            $query .= " LOWER(items.name) LIKE LOWER(?)";
+            $stmt = $this->mysqli->prepare($query);
+            $stmt->bind_param('s', $name);
+        } else {  
+            $query .= " items.id = ?";
+            $stmt = $this->mysqli->prepare($query);
+            $stmt->bind_param('i', $item_id);
+        }
+
+        // Execute the query and return the result
+        $stmt->execute();
+        return $stmt->get_result();
     }
-
-    // Execute the query and return the result
-    $stmt->execute();
-    return $stmt->get_result();
-}
-
-
 }
 ?>
