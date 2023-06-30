@@ -102,7 +102,7 @@ class Item
                 ->prepare("SELECT * FROM items WHERE item_type = 'REGULAR' 
                                                 AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 
                                                 ORDER BY items.id DESC
-                                                LIMIT ? OFFSET ?");  // Status is regulated through the MYSQL event scheduler, end_time is set to 15 minutes after creation
+                                                LIMIT ? OFFSET ?"); 
             $stmt->bind_param("ii", $itemsPerPage, $offset);
         }
 
