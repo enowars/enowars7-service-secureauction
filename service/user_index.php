@@ -7,6 +7,8 @@ include("config.php");  // Contains configuration related details like database 
 include("user.php");    // Contains User class definition
 include("item.php");    // Contains Item class definition
 
+
+
 // Creating a User object and passing database connection as a parameter
 $user = new User($con);
 
@@ -29,12 +31,10 @@ $itemsPerPage = 4;
 if (isset($_POST['submit'])) {
     $item_name = isset($_POST['item_name']) ? $_POST['item_name'] : null;
     $item_id = isset($_POST['item_id']) ? $_POST['item_id'] : null;
-    $result = $item->getSearchedItems($item_name, $item_id);
+    $result = $item->getSearchedItems($user_data['user_type'], $item_name, $item_id);
 } else {
     $result = $item->getItems($page, $itemsPerPage, $user_data['user_type']);
 }
-
-
 
 // Getting the total number of items
 $totalItems = $item->getTotalItems();

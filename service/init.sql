@@ -5,6 +5,17 @@ USE secureauction;
 -- Set MySQL server timezone to UTC
 SET @@global.time_zone = '+00:00';
 
+-- Ensuring that MYSQL event scheduler is ON
+-- SET GLOBAL event_scheduler = ON;
+
+-- Close expired auctions
+/*CREATE EVENT IF NOT EXISTS close_expired_auctions
+ON SCHEDULE EVERY 3 MINUTE
+DO
+  UPDATE items 
+  SET status = 'CLOSED' 
+  WHERE end_time <= CURRENT_TIMESTAMP AND status = 'OPEN';*/
+
 
 -- Create a `users` table for storing user account information
 CREATE TABLE IF NOT EXISTS users (
@@ -27,8 +38,10 @@ CREATE TABLE IF NOT EXISTS items (
   image_url VARCHAR(1024),
   start_price VARCHAR(1024) NOT NULL,
   item_type ENUM('REGULAR', 'PREMIUM') DEFAULT 'REGULAR',
+  status ENUM('OPEN', 'CLOSED') DEFAULT 'OPEN',
   user_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  end_time  TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(user_id),
   INDEX (created_at)
 );
@@ -39,10 +52,20 @@ CREATE TABLE IF NOT EXISTS bids (
   amount VARCHAR(1024) NOT NULL,
   user_id INT,
   item_id INT,
+  ranking INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(user_id),
   FOREIGN KEY (item_id) REFERENCES items(id),
   INDEX (created_at)
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  message TEXT,
+  read_status BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
 -- Insert data
@@ -80,6 +103,10 @@ INSERT INTO items (user_id, name, start_price) VALUES (4, 'Rare Autographed Phot
 
 -- Update item_type to 'PREMIUM' for five items
 UPDATE items SET item_type = 'PREMIUM' WHERE id IN (1, 2, 3, 4, 5);
+
+-- Set the end_time for all the items to be 2 minutes from their created_at timestamps
+UPDATE items
+SET end_time = DATE_ADD(created_at, INTERVAL 2 MINUTE);
 
 -- Bids
 INSERT INTO bids (user_id, item_id, amount) VALUES (2, 1, 60);

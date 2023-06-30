@@ -18,10 +18,10 @@ class Item
         // If the bidAmount is a numeric string, set it as the start price. If not, it's a flag and the start price should be 0.
         $startPrice = is_numeric($bidAmount) ? $bidAmount : 0;
 
-        // Prepare the SQL statement to insert a new item with the given name, start price and item type
+        // Prepare the SQL statement to insert a new item with the given name, start price, item type and end time
         $stmt = $this
             ->mysqli
-            ->prepare("INSERT INTO items (user_id, name, start_price, item_type) VALUES (?, ?, ?, ?)");
+            ->prepare("INSERT INTO items (user_id, name, start_price, item_type, end_time) VALUES (?, ?, ?, ?, ADDDATE(CURRENT_TIMESTAMP, INTERVAL 15 MINUTE))");
 
         // Bind the variables to the statement as parameters
         $stmt->bind_param("isss", $userId, $itemName, $startPrice, $itemType);
@@ -82,13 +82,17 @@ class Item
         {
             $stmt = $this->mysqli->prepare("
             SELECT items.*, bids.amount AS bidamount, users.public_key_e, users.public_key_n 
-            FROM items
-            LEFT JOIN bids ON items.id = bids.item_id
-            LEFT JOIN users ON bids.user_id = users.user_id
-            WHERE items.created_at >= NOW() - INTERVAL 10000 MINUTE  
-            ORDER BY items.id DESC
-            LIMIT ? OFFSET ?
-            ");
+        FROM items
+        LEFT JOIN bids ON items.id = bids.item_id
+        LEFT JOIN users ON bids.user_id = users.user_id
+        WHERE TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 
+        ORDER BY items.id DESC
+        LIMIT ? OFFSET ?
+            "); 
+            if($stmt === false) {
+                die('prepare() failed: ' . htmlspecialchars($this->mysqli->error));
+            }
+    
             $stmt->bind_param("ii", $itemsPerPage, $offset);
         }
         else
@@ -96,9 +100,9 @@ class Item
             $stmt = $this
                 ->mysqli
                 ->prepare("SELECT * FROM items WHERE item_type = 'REGULAR' 
-                                                AND created_at >= NOW() - INTERVAL 10000 MINUTE 
+                                                AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 
                                                 ORDER BY items.id DESC
-                                                LIMIT ? OFFSET ?");  /* changed here */
+                                                LIMIT ? OFFSET ?");  // Status is regulated through the MYSQL event scheduler, end_time is set to 15 minutes after creation
             $stmt->bind_param("ii", $itemsPerPage, $offset);
         }
 
@@ -174,33 +178,44 @@ class Item
         }
     }
 
-    public function getSearchedItems($name = null, $item_id = null)
+    public function getSearchedItems($user_type = null, $name = null, $item_id = null)
     {
         // Prepare the base query
         $query = "SELECT items.*, bids.amount AS bidamount, users.public_key_e, users.public_key_n 
                 FROM items 
                 LEFT JOIN bids ON items.id = bids.item_id 
                 LEFT JOIN users ON bids.user_id = users.user_id 
-                WHERE";
-
+                WHERE TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 AND";
+    
         // Determine whether to search by name or id or both
         if (!is_null($name) && !is_null($item_id)) {
-            $query .= " LOWER(items.name) LIKE LOWER(?) OR items.id = ?";
-            $stmt = $this->mysqli->prepare($query);
-            $stmt->bind_param('si', $name, $item_id);
+            $query .= " (LOWER(items.name) LIKE LOWER(?) OR items.id = ?)";
         } elseif (!is_null($name)) {
             $query .= " LOWER(items.name) LIKE LOWER(?)";
-            $stmt = $this->mysqli->prepare($query);
-            $stmt->bind_param('s', $name);
         } else {  
             $query .= " items.id = ?";
-            $stmt = $this->mysqli->prepare($query);
+        }
+    
+        // Add condition for user type (if user_type is 'REGULAR', only show 'REGULAR' items with status 'OPEN')
+        if ($user_type == 'REGULAR') {
+            $query .= " AND items.item_type = 'REGULAR'";
+        }
+    
+        // Prepare the query
+        $stmt = $this->mysqli->prepare($query);
+    
+        // Bind parameters
+        if (!is_null($name) && !is_null($item_id)) {
+            $stmt->bind_param('si', $name, $item_id);
+        } elseif (!is_null($name)) {
+            $stmt->bind_param('s', $name);
+        } else {  
             $stmt->bind_param('i', $item_id);
         }
-
+    
         // Execute the query and return the result
         $stmt->execute();
         return $stmt->get_result();
-    }
+    }   
 }
 ?>
