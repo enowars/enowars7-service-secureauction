@@ -49,6 +49,7 @@ class Item
                 $bid = new Bid($this->mysqli);
                 // Enc. Bid Amount
                 $encryptedAmount = $bid->placeBid($itemId, $userId, $bidAmount);
+                //var_dump($encryptedAmount);
             }
             else{
                 // For regular items use the bid amount, either it will be the start price or the flag
@@ -71,7 +72,13 @@ class Item
         }
     }
 
-    // Get the items, the bids for that item and the e and n values for the user who placed the bid
+    /*
+    This SQL query retrieves item details, associated bids, and public key values (e and n) of the item's owner. 
+    It ensures that all items get included, even if they have no bids. 
+    The query only considers items created within the last ~16.67 hours, and returns results in a descending order by item ID, 
+    showing the newest items first. The 'LIMIT' and 'OFFSET' parameters are utilized for pagination, 
+    controlling the number of records fetched per page. 
+    */
     public function getItems($page, $itemsPerPage, $userType)
     {
         // Calculate the offset for the SQL query based on the current page number and the number of items per page
@@ -81,13 +88,13 @@ class Item
         if ($userType === 'PREMIUM')
         {
             $stmt = $this->mysqli->prepare("
-            SELECT items.*, bids.amount AS bidamount, users.public_key_e, users.public_key_n 
-        FROM items
-        LEFT JOIN bids ON items.id = bids.item_id
-        LEFT JOIN users ON bids.user_id = users.user_id
-        WHERE TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 
-        ORDER BY items.id DESC
-        LIMIT ? OFFSET ?
+            SELECT items.*, bids.amount AS bidamount, bids.user_id AS bidder_id, users.public_key_e, users.public_key_n, items.user_id AS creator_id 
+            FROM items
+            LEFT JOIN bids ON items.id = bids.item_id
+            LEFT JOIN users ON items.user_id = users.user_id
+            WHERE TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 60000 
+            ORDER BY items.id DESC
+            LIMIT ? OFFSET ?
             "); 
             if($stmt === false) {
                 die('prepare() failed: ' . htmlspecialchars($this->mysqli->error));
@@ -99,8 +106,11 @@ class Item
         {
             $stmt = $this
                 ->mysqli
-                ->prepare("SELECT * FROM items WHERE item_type = 'REGULAR' 
-                                                AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 
+                ->prepare("SELECT *, items.user_id AS creator_id  
+                                                FROM items  
+                                                LEFT JOIN users ON items.user_id = users.user_id
+                                                WHERE item_type = 'REGULAR' 
+                                                AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 60000 
                                                 ORDER BY items.id DESC
                                                 LIMIT ? OFFSET ?"); 
             $stmt->bind_param("ii", $itemsPerPage, $offset);

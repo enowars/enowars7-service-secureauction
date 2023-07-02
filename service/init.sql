@@ -124,7 +124,7 @@ INSERT INTO bids (user_id, item_id, amount) VALUES (1, 5, 25);
 CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'secure_password';
 
 -- Grant limited permissions to new user on the `secureauction` database
-GRANT SELECT, INSERT, UPDATE ON secureauction.* TO 'appuser'@'%';
+GRANT SELECT, INSERT ON secureauction.* TO 'appuser'@'%';
 
 -- Tell MySQL server to reload user privileges
 FLUSH PRIVILEGES;

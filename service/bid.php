@@ -84,17 +84,24 @@
         }
         
         public function decryptBid($encrypted_bid, $privateKey) {
-            // Check if private_key_d and public_key_n are set and numeric
-            if(!isset($privateKey['private_key_d']) || !isset($privateKey['public_key_n'])
-            || !is_numeric($privateKey['private_key_d']) || !is_numeric($privateKey['public_key_n'])) {
-            if(!isset($privateKey['private_key_d']) || !is_numeric($privateKey['private_key_d'])){
-                return "Hint: It seems you may be having trouble with finding the correct values for private_key_d. Use above public keys e & n.\n";   
+            $private_key_d = str_replace(array("\n", "\r", " "), '', $privateKey);
+            // Check if private_key_d is set
+            if(!isset($privateKey['private_key_d'])) {
+                return "Hint: You haven't provided a value for private_key_d.\n";   
             }
-                if(!isset($privateKey['public_key_n']) || !is_numeric($privateKey['public_key_n'])){
-                    return "Hint: The encrypted bid should be a numeric value. Please check your inputs.\n";
-                }
+            // Check if private_key_d is numeric
+            else if(!is_numeric($privateKey['private_key_d'])) {
+                return "Hint: The value for private_key_d should be numeric. Please check your inputs.\n";   
             }
 
+            // Check if public_key_n is set
+            if(!isset($privateKey['public_key_n'])) {
+                return "Hint: You haven't provided a value for public_key_n.\n";   
+            }
+            // Check if public_key_n is numeric
+            else if(!is_numeric($privateKey['public_key_n'])) {
+                return "Hint: The value for public_key_n should be numeric. Please check your inputs.\n";
+            }
             // Check that encrypted_bid is numeric
             if (!is_numeric($encrypted_bid)) {
                 return "Error: encrypted_bid is not numeric.\n";
@@ -104,6 +111,12 @@
             $decrypted_bid = gmp_powm(gmp_init($encrypted_bid, 10), gmp_init($privateKey['private_key_d'], 10), gmp_init($privateKey['public_key_n'], 10));
             // Convert the result to a hexadecimal string
             $decrypted_bid_hex = gmp_strval($decrypted_bid, 16);
+
+            // Check if the length of the hex string is even before converting it to binary
+            if (strlen($decrypted_bid_hex) % 2 != 0) {
+                return "Error: Decryption failed. Please check your private key.";
+            }
+
             // Convert the hexadecimal string into a binary string (which is our original message)
             $decrypted_bid_string = hex2bin($decrypted_bid_hex);
             return $decrypted_bid_string;
@@ -123,9 +136,16 @@
             $itemResult = $stmt->get_result();
             $item = $itemResult->fetch_assoc();
 
-            // Fetch the user details
+            // Fetch the item owner's details
             $stmt = $this->mysqli->prepare("SELECT * FROM users WHERE user_id = ?");
-            $stmt->bind_param("i", $userId);
+            $stmt->bind_param("i", $item['user_id']);  // Using the user_id from the item's details
+            $stmt->execute();
+            $itemOwnerResult = $stmt->get_result();
+            $itemOwner = $itemOwnerResult->fetch_assoc();
+
+            // Fetch the bidding user's details
+            $stmt = $this->mysqli->prepare("SELECT * FROM users WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);  // Using the user_id of the bidder
             $stmt->execute();
             $userResult = $stmt->get_result();
             $user = $userResult->fetch_assoc();
@@ -135,8 +155,8 @@
                 // Create an instance of the User class
                 $user = new User($this->mysqli); // Pass the database connection
         
-                // Get the user's public key
-                $publicKey = $user->getPublicKey($userId); // Use the user's ID passed to the function
+                // Get the item owner's public key
+                $publicKey = $user->getPublicKey($item['user_id']);  // Using the user_id from the item's details
                
                 // Encrypt the amount using the public key
                 $encryptedAmount = $this->rsaEncrypt($amount, $publicKey);
@@ -147,32 +167,35 @@
                 $stmt->execute();
 
                 // Return the encrypted amount
+                //var_dump("Premium user placed an encrypted bid");
+                //var_dump($userId);
                 return $encryptedAmount;
             } else {
                 // Regular users place normal (unencrypted) bid, 
                 $stmt = $this->mysqli->prepare("INSERT INTO bids (user_id, item_id, amount) VALUES (?, ?, ?)");
                 $stmt->bind_param("iis", $userId, $itemId, $amount);
                 $stmt->execute();
+                //var_dump("Regular user placed a bid");
+                //var_dump($userId);
                 return true;
             }
+        }    
+    }   
+    // Global function to get the total number of bids
+    function getTotalBids($mysqli){
+        $stmt = $mysqli->prepare("SELECT COUNT(*) as total_bids FROM bids");
+        $stmt->execute(); 
+        $result = $stmt->get_result(); 
+    
+        // Check if the query was successful
+        if ($result) {
+            // Fetch the result as an associative array and return the highest bid
+            $data = $result->fetch_assoc();
+            return $data['total_bids'];
+        } else {
+            // If the query failed, print the error message and return false
+            echo 'Query Error: ' . $mysqli->error;
+            return false;
         }
-    }
-
-        // Global function to get the total number of bids
-        function getTotalBids($mysqli){
-            $stmt = $mysqli->prepare("SELECT COUNT(*) as total_bids FROM bids");
-            $stmt->execute(); 
-            $result = $stmt->get_result(); 
-        
-            // Check if the query was successful
-            if ($result) {
-                // Fetch the result as an associative array and return the highest bid
-                $data = $result->fetch_assoc();
-                return $data['total_bids'];
-            } else {
-                // If the query failed, print the error message and return false
-                echo 'Query Error: ' . $mysqli->error;
-                return false;
-            }
-        }
+    }   
 ?>

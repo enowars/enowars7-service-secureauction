@@ -60,10 +60,10 @@ unset($_SESSION['public_key_n']);
                             //echo "<h5 class='mt-5'>Here are your primes p and q:</h5>";
                             //echo "<p>p: $p</p>";
                             //echo "<p>q: $q</p>";
-                            echo "<h5 class='mt-5'>Here is your public key e:</h5>";
-                            echo "<p>e: $e</p>";
-                            echo "<h5 class='mt-5'>Here is your public key n:</h5>";
-                            echo "<p>n: $n</p>";
+                            //echo "<h5 class='mt-5'>Here is your public key e:</h5>";
+                            //echo "<p>e: $e</p>";
+                            //echo "<h5 class='mt-5'>Here is your public key n:</h5>";
+                            //echo "<p>n: $n</p>";
                         ?>
                          <input type="hidden" id="userId" value="<?php echo $user_id; ?>">
                         <button class="btn btn-primary" onclick="window.location.href = 'user_index.php';">Proceed</button>

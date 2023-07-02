@@ -203,7 +203,7 @@ async def decrypt(c, d, n):
     m = gmpy2.powmod(c, d, n)
     # Convert the result to a hexadecimal string
     m_hex = gmpy2.digits(m, 16)
-    # Convert the hexadecimal string into a binary string (which is our original message)
+    # Convert the hexadecimal string into a binary string (which is our original message the flag)
     m_string = bytes.fromhex(m_hex).decode('utf-8')
     return m_string
 

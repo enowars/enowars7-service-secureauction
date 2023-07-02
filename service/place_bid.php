@@ -79,5 +79,4 @@ if ($user_data['user_type'] === 'PREMIUM') {
     header("Location: item_detail.php?id=$item_id&success=bid_placed");
     exit;
 }
-
 ?>

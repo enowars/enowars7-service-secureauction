@@ -23,12 +23,8 @@ if(!$user_data) {
     die;
 }
 
-// Define secret salt
-$salt = "secret_salt";
-
 // Take user_id as a GET parameter
 $user_id = isset($_GET['user_id']) ? $_GET['user_id'] : $_SESSION['user_id'];
-
 
 // Check if the user_id matches the one stored in the session (current logged-in user)
 if ($user_id != $_SESSION['user_id']) {
@@ -57,7 +53,23 @@ $itemsPerPage = $totalBids;
 // Calculate the offset for the SQL query
 $offset = ($page - 1) * $itemsPerPage;
 
-$result = $user->getUserBids($user_id, $offset, $itemsPerPage);
+$view = isset($_GET['view']) ? $_GET['view'] : 'getUserBids';
+switch ($view) {
+    case 'getUserBids':
+        $result = $user->getUserBids($user_id, $offset, $itemsPerPage);
+        $canChangeBid = false;
+        break;
+    case 'myBids':
+        $result = $user->getMyBids($user_id, $offset, $itemsPerPage); // This function should be implemented in your User class.
+        $canChangeBid = true;
+        break;
+    default:
+        $result = $user->getUserBids($user_id, $offset, $itemsPerPage);
+        $canChangeBid = false;
+        break;
+}
+
+
 
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
@@ -66,36 +78,58 @@ $totalItems = $user->getUserBidsCount($user_data['user_id']);
 $totalPages = ceil($totalItems / $itemsPerPage);
 ?> <div class="container">
     <h1 class="mt-2">
-        Welcome, <?= htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') ?>
+        Welcome, <?= htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') ?> (User ID: <?= $user_data['user_id'] ?>)
     </h1>
     <h3 class="mt-2 text-secondary">
         Status: <?= htmlspecialchars($user_data['user_type'], ENT_QUOTES, 'UTF-8') ?>
     </h3>
 
+    <form method="GET" action="">
+        <select name="view" id="view" onchange="this.form.submit()">
+            <option value="getUserBids" <?= isset($_GET['view']) && $_GET['view'] === 'getUserBids' ? 'selected' : '' ?>>Received Bids</option>
+            <option value="myBids" <?= isset($_GET['view']) && $_GET['view'] === 'myBids' ? 'selected' : '' ?>>Placed Bids</option>
+        </select>
+    </form>
+    
+
 <?php if ($result->num_rows > 0) {
         echo '<table class="table table-striped">';
         echo '<thead>';
-        echo 
-            '<tr>
+        echo '<tr>
                 <th scope="col">Item ID</th>
                 <th scope="col">Item Name</th>
                 <th scope="col">Start Price</th>
                 <th scope="col">Item Type</th>
-                <th scope="col">Created At</th>
-                <th scope="col">Bid Amount</th>
-                <th scope="col">Actions</th> 
-            </tr>';
+                <th scope="col">Item Created At</th>';
+
+       if($canChangeBid){
+            echo '<th scope="col">Creator ID</th>';
+        } else {
+            echo '<th scope="col">Bidder ID</th>';
+        }
+        echo '<th scope="col">Bid Created At</th>
+              <th scope="col">Bid Amount</th> 
+              <th scope="col">Action</th> 
+              </tr>';
         echo '</thead>';
+
         echo '<tbody>';
         while ($row = $result->fetch_assoc()) {
             $highlightClass = ($user_data['user_type'] === 'PREMIUM' && $row['item_type'] === 'PREMIUM') ? 'table-warning' : '';
-            echo '<tr class="' . $highlightClass . '">'; 
-            echo '<td class="item-id">' . $row['id'] . '</td>';
-            echo '<td class="item-name">' . $row['name'] . '</td>';
-            echo '<td class="start-price">' . $row['start_price'] . '</td>';
-            echo '<td class="item-type">' . $row['item_type'] . '</td>';
-            echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
-            $amount = $row['amount'];
+            echo '<tr class="' . $highlightClass . '">'
+            . '<td class="item-id">' . $row['item_id'] . '</td>'
+            . '<td class="item-name">' . $row['item_name'] . '</td>'
+            . '<td class="start-price">' . $row['start_price'] . '</td>'
+            . '<td class="item-type">' . $row['item_type'] . '</td>'
+            . '<td>' . date('Y-m-d H:i:s', strtotime($row['item_created_at'])) . '</td>';
+            if ($canChangeBid) {
+                echo '<td class="bidder-id">' . $row['creator_id'] . '</td>';
+            }
+            else {
+                echo '<td class="creator-id">' . $row['bidder_id'] . '</td>';
+            }
+            echo '<td>' . date('Y-m-d H:i:s', strtotime($row['bid_created_at'])) . '</td>';
+            $amount = $row['bid_amount'];
             $chunks = str_split($amount, 70);
             echo '<td class="bid-amount">';
             foreach ($chunks as $chunk) {
@@ -103,35 +137,35 @@ $totalPages = ceil($totalItems / $itemsPerPage);
             }
             echo '</td>';
             // Form to change the bid amount
-            echo '<td>
-            <form action="change_bid.php" method="post">
-                <input type="hidden" name="item_id" value="' . $row['id'] . '">
-                <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
-                <input type="text" name="new_bid" min="0" required>
-                <input type="submit" value="Change Bid" class="btn btn-primary">
-            </form>
-            </td>';
+            if($canChangeBid){
+                echo '<td>
+                <form action="change_bid.php" method="post">
+                    <input type="hidden" name="item_id" value="' . $row['item_id'] . '">
+                    <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
+                    <input type="text" name="new_bid" min="0" required>
+                    <input type="submit" value="Change Bid" class="btn btn-primary">
+                </form>
+                </td>';
+            }
             // Show the "Decrypt Bid" form only if the user is PREMIUM
-            if ($user_data['user_type'] === 'PREMIUM') {
+            if ($user_data['user_type'] === 'PREMIUM' && $canChangeBid === false) {
                 echo '<td>
                 <form action="decrypt_bid.php" method="post">
                     <input type="hidden" name="item_id" value="' . $row['id'] . '">
                     <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
-                    <input type="hidden" name="amount" value="' . $row['amount'] . '">
-                    <input type="password" name="private_key_d" placeholder="Enter your private key" required>
-                    <input type="submit" value="Decrypt Bid" class="btn btn-primary">
+                    <input type="hidden" name="amount" value="' . $row['bid_amount'] . '">
+                    <input type="password" name="private_key_d" placeholder="Enter your private key" >
+                    <input type="submit" value="Show Bid" class="btn btn-primary">
                 </form>
                 </td>';
-            } else {
-                echo '<td>
-                <button type="button" class="btn btn-secondary" disabled>Demo Action</button>
-                </td>';
-            }
+            } 
             echo '</tr>';
         }
             echo '</tbody>';
             echo '</table>';
-        } else {
+        } 
+        else 
+        {
             echo "<div class='alert alert-warning' role='alert'>No items found.</div>";
         }
 

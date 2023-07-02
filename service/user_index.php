@@ -25,7 +25,7 @@ $item = new Item($con);
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 
 // Setting the number of items to be displayed per page
-$itemsPerPage = 4;
+$itemsPerPage = 5;
 
 // If form is submitted, get the search results, else get the items for the current page
 if (isset($_POST['submit'])) {
@@ -46,13 +46,13 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
 <!-- Starting the HTML section of the page -->
 <div class="container">
     <h1 class="mt-4 mb-4  pb-1">
-        List of Items in Auction
+        Welcome: <?= htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') ?>
+        (User ID: <?= htmlspecialchars($user_data['user_id'], ENT_QUOTES, 'UTF-8') ?>)
     </h1>
     <h3 class="mt-1 pb-2 text-secondary">
-        Status: <?= htmlspecialchars($user_data['user_type'], ENT_QUOTES, 'UTF-8') ?>
+        User Type: <?= htmlspecialchars($user_data['user_type'], ENT_QUOTES, 'UTF-8') ?>
     </h3>
-
-
+    
     <form method="post" action="" class="form-padding">
         <input type="text" name="item_name" placeholder="Item name">
         <input type="text" name="item_id" placeholder="Item id">
@@ -65,9 +65,11 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
         // Start a table and add table headers
         echo '<table class="table table-striped">';
         echo '<thead>';
-        echo '<tr><th scope="col">Item ID</th><th scope="col">Name</th><th scope="col">Start Price</th><th scope="col">Item Type</th>';
-        echo '<th scope="col">Timestamp</th>';
-        echo '<th scope="col">Actions</th>';  // new Actions column
+        echo '<tr><th scope="col">Item ID</th><th scope="col">Item Name</th><th scope="col">Start Price</th><th scope="col">Item Type</th>';
+        echo '<th scope="col">Created At</th>';
+        echo '<th scope="col">Creator ID</th>';  // new column for Creator ID
+        echo '<th scope="col">Bidder ID</th>';  // existing column for Bidder ID
+        echo '<th scope="col">Actions</th>';  // existing Actions column
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
@@ -79,7 +81,9 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
             echo '<td>' . $row['name'] . '</td>';
             echo '<td>' . $row['start_price'] . '</td>';
             echo '<td>' . $row['item_type'] . '</td>';
-             echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
+            echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
+            echo '<td>' . $row['creator_id'] . '</td>'; // Display the creator ID
+            echo '<td>' . (isset($row['bidder_id']) ? $row['bidder_id'] : 'N/A') . '</td>'; // Display the bidder ID or 'N/A' if there's no bid
  
             
             // Add "Decrypt Bid" form

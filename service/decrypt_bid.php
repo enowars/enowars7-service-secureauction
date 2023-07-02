@@ -5,9 +5,10 @@ include("item.php");
 include("bid.php");
 
 // Get private key, item id and user id from POST request
-$private_key_d = $_POST['private_key_d'];
+$private_key_d = str_replace(array("\n", "\r", " "), '', $_POST['private_key_d']);
 $item_id = $_POST['item_id'];
 $user_id = $_POST['user_id'];
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['amount'])) {
@@ -26,7 +27,6 @@ $bid = new Bid($con);
 
 // Get public key components e and n
 $publicKey = $user->getPublicKey($user_id);
-
 $public_key_e = $publicKey['public_key_e'];
 $public_key_n = $publicKey['public_key_n'];
 
@@ -36,6 +36,8 @@ $chunkSize = 50; // Define the chunk size
 $chunksPublicKeyE = str_split($public_key_e, $chunkSize);
 $chunksPublicKeyN = str_split($public_key_n, $chunkSize);
 $chunksPrivateKeyD = str_split($private_key_d, $chunkSize);
+
+
 
 $keys = [
     'private_key_d' => $private_key_d,

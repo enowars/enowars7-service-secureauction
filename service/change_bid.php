@@ -21,9 +21,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $newBid = $_POST['new_bid'];
 
     // Validate form data
-    if (empty($itemId) || empty($userId) || empty($newBid)) {
-        die("Please fill in all fields.");
+    if (empty($itemId)) {
+        die("Item ID is required.");
     }
+
+    if (empty($userId)) {
+        die("User ID is required.");
+    }
+
+    if (empty($newBid)) {
+        die("New Bid is required.");
+    }
+
 
     // Bid should be a positive number 
     if ($newBid <= 0 ) {

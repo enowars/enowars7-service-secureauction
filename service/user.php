@@ -121,10 +121,17 @@ class User
         return 0;
     }
 
-    // Function to fetch a specific set of bids for a user, with support for pagination
+    // Function to fetch the bids that all users have placed on the items created by a particular user
+    // So, if Alice ($user_id) created various items, this query will return all the bids that other users have placed on Alice's items.
     public function getUserBids($user_id, $offset, $limit)
     {
-        $sql = "SELECT items.id, items.name, items.start_price, items.item_type, items.created_at, bids.created_at, bids.amount FROM bids JOIN items ON items.id = bids.item_id WHERE bids.user_id = " . $user_id . " ORDER BY items.created_at DESC LIMIT " . $offset . ", " . $limit;
+        $sql = "SELECT items.id as item_id, items.name as item_name, items.start_price, items.item_type, items.created_at as item_created_at,
+        bids.user_id as bidder_id, bids.created_at as bid_created_at, bids.amount as bid_amount
+        FROM items 
+        JOIN bids ON items.id = bids.item_id 
+        WHERE items.user_id = " . $user_id . " 
+        ORDER BY bids.created_at DESC, bids.amount DESC LIMIT " . $offset . ", " . $limit;
+
 
         // Execute the query
         $result = $this
@@ -135,6 +142,35 @@ class User
         return $result;
         
     }
+
+    // Get the bids i placed on other users' items
+    public function getMyBids($user_id, $offset, $limit)
+    {
+        $sql = "SELECT 
+                    items.id as item_id, 
+                    items.name as item_name, 
+                    items.start_price, 
+                    items.item_type, 
+                    items.created_at as item_created_at,
+                    items.user_id as creator_id,
+                    bids.user_id as bidder_id, 
+                    bids.created_at as bid_created_at, 
+                    bids.amount as bid_amount
+                FROM items 
+                INNER JOIN bids ON items.id = bids.item_id 
+                WHERE bids.user_id = ? 
+                ORDER BY bids.created_at DESC, bids.amount DESC
+                LIMIT ?, ?";
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bind_param("iii", $user_id, $offset, $limit);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        return $result;
+    }
+
 
     // Function to fetch a user by username
     public function getUserByUsername($user_name)
@@ -196,11 +232,7 @@ class User
 
         // Choose e such that 1 < e < totient and e and totient are coprime
         $e = gmp_init(65537);
-        /*while (gmp_gcd($e, $totient) != 1)
-        {
-            $e = gmp_add($e, 2);
-        }*/
-
+       
         // Calculate d, the modular inverse of e mod totient
         $d = gmp_invert($e, $totient);
 

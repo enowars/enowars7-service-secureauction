@@ -5,7 +5,7 @@ include("item.php");
 include("bid.php");
 
 // Get keys and identifiers from POST request
-$private_key_d = $_POST['private_key_d'];
+$private_key_d = str_replace(array("\n", "\r", " "), '', $_POST['private_key_d']);
 $item_id = $_POST['item_id'];
 $user_id = $_POST['user_id']; // Not used
 $public_key_e = $_POST['public_key_e'];
