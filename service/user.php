@@ -171,6 +171,32 @@ class User
         return $result;
     }
 
+    // Gives you an array of bid IDs and decrypted amounts, ranked by the bid amount
+    public function decryptAndRankUserBids($user_id, $private_key_d, $bid)
+    {
+        // Get all bids of the user
+        $bids = $this->getUserBids($user_id, 0, PHP_INT_MAX);
+        // print all bids
+        while($row = $bids->fetch_assoc()) {
+            echo $row['bid_amount'] . "<br>";
+        }
+
+        // Decrypt bids and store them along with bid ids in a new array
+        $decrypted_bids = array();
+        while($row = $bids->fetch_assoc()) {
+            $decrypted_bid_amount = $bid->decryptBid($row['bid_amount'], $private_key_d);
+            array_push($decrypted_bids, array("id" => $row['item_id'], "amount" => $decrypted_bid_amount));
+        }
+
+        // Sort bids in descending order
+        usort($decrypted_bids, function($a, $b) {
+            return $b['amount'] - $a['amount'];
+        });
+
+        return $decrypted_bids;
+    }
+
+
 
     // Function to fetch a user by username
     public function getUserByUsername($user_name)

@@ -92,7 +92,8 @@ class Item
             FROM items
             LEFT JOIN bids ON items.id = bids.item_id
             LEFT JOIN users ON items.user_id = users.user_id
-            WHERE TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 60000 
+            WHERE (items.item_type = 'PREMIUM' OR (items.item_type = 'REGULAR' AND users.user_type = 'PREMIUM')) 
+            AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 60000 
             ORDER BY items.id DESC
             LIMIT ? OFFSET ?
             "); 

@@ -98,7 +98,6 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
                 <input type="hidden" name="bidamount" value="' . $row['bidamount'] . '">
                 <input type="hidden" name="public_key_e" value="' . $row['public_key_e'] . '">
                 <input type="hidden" name="public_key_n" value="' . $row['public_key_n'] . '">
-                <input type="password" name="private_key_d" placeholder="Enter a private key">
                 <input type="submit" value="More Info" class="btn btn-danger">
                 </form>';
             } else {

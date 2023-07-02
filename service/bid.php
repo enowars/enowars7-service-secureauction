@@ -121,8 +121,8 @@
             $decrypted_bid_string = hex2bin($decrypted_bid_hex);
             return $decrypted_bid_string;
         }
-        
-        
+
+
         // Function to place a bid
         public function placeBid($itemId, $userId, $amount) {
             // Ensure inputs are integers
