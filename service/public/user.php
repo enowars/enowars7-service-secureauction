@@ -132,10 +132,17 @@ class User
         WHERE items.user_id = " . $user_id . " 
         ORDER BY bids.created_at DESC, bids.amount DESC LIMIT " . $offset . ", " . $limit;
 
+        // Prepare the statement
+        $stmt = $this->connection->prepare($sql);
+
+        // Bind the parameters
+        $stmt->bind_param("iii", $user_id, $offset, $limit);
+
         // Execute the query
-        $result = $this
-            ->connection
-            ->query($sql);
+        $stmt->execute();
+
+        // Get the result
+        $result = $stmt->get_result();
 
         // Return the result
         return $result;
@@ -248,10 +255,7 @@ class User
         $p = $this->generate_random_prime(($bit_length - 1) / 2);
        
         // Generate a random prime number q
-        $offset = gmp_init("10");
-        $increased_p = gmp_add($p, $offset);
-        $number = gmp_mul($p, $increased_p);
-        $q = gmp_nextprime($number);
+        $q = $this->generate_random_prime($bit_length / 2);
 
         // Calculate n = p * q
         $n = gmp_mul($p, $q);
