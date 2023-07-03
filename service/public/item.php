@@ -49,7 +49,6 @@ class Item
                 $bid = new Bid($this->mysqli);
                 // Enc. Bid Amount
                 $encryptedAmount = $bid->placeBid($itemId, $userId, $bidAmount);
-                //var_dump($encryptedAmount);
             }
             else{
                 // For regular items use the bid amount, either it will be the start price or the flag
@@ -75,7 +74,7 @@ class Item
     /*
     This SQL query retrieves item details, associated bids, and public key values (e and n) of the item's owner. 
     It ensures that all items get included, even if they have no bids. 
-    The query only considers items created within the last ~16.67 hours, and returns results in a descending order by item ID, 
+    The query only considers items created within the last 12 minutes, and returns results in a descending order by item ID, 
     showing the newest items first. The 'LIMIT' and 'OFFSET' parameters are utilized for pagination, 
     controlling the number of records fetched per page. 
     */
@@ -93,7 +92,7 @@ class Item
             LEFT JOIN bids ON items.id = bids.item_id
             LEFT JOIN users ON items.user_id = users.user_id
             WHERE (items.item_type = 'PREMIUM' OR (items.item_type = 'REGULAR' AND users.user_type = 'PREMIUM')) 
-            AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 60000 
+            AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 720 
             ORDER BY items.id DESC
             LIMIT ? OFFSET ?
             "); 
@@ -111,7 +110,7 @@ class Item
                                                 FROM items  
                                                 LEFT JOIN users ON items.user_id = users.user_id
                                                 WHERE item_type = 'REGULAR' 
-                                                AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 60000 
+                                                AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 720 
                                                 ORDER BY items.id DESC
                                                 LIMIT ? OFFSET ?"); 
             $stmt->bind_param("ii", $itemsPerPage, $offset);
@@ -196,7 +195,7 @@ class Item
                 FROM items 
                 LEFT JOIN bids ON items.id = bids.item_id 
                 LEFT JOIN users ON bids.user_id = users.user_id 
-                WHERE TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 AND";
+                WHERE TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 720 AND";
     
         // Determine whether to search by name or id or both
         if (!is_null($name) && !is_null($item_id)) {

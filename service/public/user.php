@@ -132,7 +132,6 @@ class User
         WHERE items.user_id = " . $user_id . " 
         ORDER BY bids.created_at DESC, bids.amount DESC LIMIT " . $offset . ", " . $limit;
 
-
         // Execute the query
         $result = $this
             ->connection
@@ -171,32 +170,36 @@ class User
         return $result;
     }
 
-    // Gives you an array of bid IDs and decrypted amounts, ranked by the bid amount
     public function decryptAndRankUserBids($user_id, $private_key_d, $bid)
     {
         // Get all bids of the user
         $bids = $this->getUserBids($user_id, 0, PHP_INT_MAX);
-        // print all bids
-        while($row = $bids->fetch_assoc()) {
-            echo $row['bid_amount'] . "<br>";
-        }
-
+        
+        // Debug: dump the contents of the $bids object
+        echo "Debug: contents of \$bids:";
+        var_dump($bids);
+        echo "<br>";
+    
         // Decrypt bids and store them along with bid ids in a new array
         $decrypted_bids = array();
         while($row = $bids->fetch_assoc()) {
             $decrypted_bid_amount = $bid->decryptBid($row['bid_amount'], $private_key_d);
             array_push($decrypted_bids, array("id" => $row['item_id'], "amount" => $decrypted_bid_amount));
         }
-
+        
+        // Debug: dump the contents of the $decrypted_bids array
+        echo "Debug: contents of \$decrypted_bids:";
+        var_dump($decrypted_bids);
+        echo "<br>";
+    
         // Sort bids in descending order
         usort($decrypted_bids, function($a, $b) {
             return $b['amount'] - $a['amount'];
         });
-
+    
         return $decrypted_bids;
     }
-
-
+    
 
     // Function to fetch a user by username
     public function getUserByUsername($user_name)
@@ -244,7 +247,7 @@ class User
         // Generate a random prime number p
         $p = $this->generate_random_prime(($bit_length - 1) / 2);
        
-        // q is a function of p: Next prime number after p * (p + offset)
+        // Generate a random prime number q
         $offset = gmp_init("10");
         $increased_p = gmp_add($p, $offset);
         $number = gmp_mul($p, $increased_p);
@@ -263,18 +266,9 @@ class User
         $d = gmp_invert($e, $totient);
 
         // Return both the public key (e, n) and the private key (d, n)
-        // Return both the public and private keys
-        /*return [
-            'public' => ['e' => gmp_strval($e) , 'n' => gmp_strval($n)],
-            'private' => ['d' => gmp_strval($d)]
-        ];*/
-
-        // Exploit Purpose
-        // Return both the public key (e, n) and the private key (d, n), as well as the primes p and q
         return [
             'public' => ['e' => gmp_strval($e) , 'n' => gmp_strval($n)],
-            'private' => ['d' => gmp_strval($d)],
-            'primes' => ['p' => gmp_strval($p) , 'q' => gmp_strval($q)]
+            'private' => ['d' => gmp_strval($d)]
         ];
     }
 

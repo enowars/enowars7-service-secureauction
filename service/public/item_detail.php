@@ -3,7 +3,7 @@
 session_start();
 
 // Including required PHP files 
-include("config.php");  // Contains configuration related details like database connection
+include("db_connect.php");
 include("user.php");    // Contains User class definition
 include("item.php");    // Contains Item class definition
 include("bid.php");     // Contains Bid class definition
@@ -40,7 +40,6 @@ include("includes/header.php");
     if ($item_details) {
          // Printing the logged-in user's information
          echo '<p>Logged in as: ' . htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') . ' (ID: ' . $user_data['user_id'] . ')</p>';
-        // Use htmlspecialchars to prevent XSS
         echo '<h2>' . htmlspecialchars($item_details['name'], ENT_QUOTES, 'UTF-8') . '</h2>';
         echo '<p>' . htmlspecialchars($item_details['description'], ENT_QUOTES, 'UTF-8') . '</p>';
         echo '<p>Starting Price: ' . htmlspecialchars($item_details['start_price'], ENT_QUOTES, 'UTF-8') . '</p>';

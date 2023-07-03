@@ -3,7 +3,7 @@
 session_start();
 
 // Including the required PHP files
-include("config.php");  // Contains configuration related details like database connection
+include("db_connect.php");
 include("user.php");    // Contains User class definition
 include("item.php");    // Contains Item class definition
 
@@ -67,9 +67,9 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
         echo '<thead>';
         echo '<tr><th scope="col">Item ID</th><th scope="col">Item Name</th><th scope="col">Start Price</th><th scope="col">Item Type</th>';
         echo '<th scope="col">Created At</th>';
-        echo '<th scope="col">Creator ID</th>';  // new column for Creator ID
-        echo '<th scope="col">Bidder ID</th>';  // existing column for Bidder ID
-        echo '<th scope="col">Actions</th>';  // existing Actions column
+        echo '<th scope="col">Creator ID</th>';  
+        echo '<th scope="col">Bidder ID</th>';  
+        echo '<th scope="col">Actions</th>';  
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
@@ -81,15 +81,15 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
             echo '<td>' . $row['name'] . '</td>';
             echo '<td>' . $row['start_price'] . '</td>';
             echo '<td>' . $row['item_type'] . '</td>';
-            echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; // Format the timestamp
-            echo '<td>' . $row['creator_id'] . '</td>'; // Display the creator ID
+            echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; 
+            echo '<td>' . $row['creator_id'] . '</td>'; 
             echo '<td>' . (isset($row['bidder_id']) ? $row['bidder_id'] : 'N/A') . '</td>'; // Display the bidder ID or 'N/A' if there's no bid
  
             
             // Add "Decrypt Bid" form
             echo '<td>';
             if ($user_data['user_type'] === 'PREMIUM') {
-                // "More Info" form, scraper friendly
+                // "More Info" form
                 echo '<form action="item_info.php" method="post" data-item-id="' . $row['id'] . '" data-name="' . $row['name'] . '" data-user-id="' . $user_data['user_id'] . '" data-start-price="' . $row['start_price'] . '" data-bidamount="' . $row['bidamount'] . '" data-public-key-e="' . $row['public_key_e'] . '" data-public-key-n="' . $row['public_key_n'] . '">
                 <input type="hidden" name="item_id" value="' . $row['id'] . '">
                 <input type="hidden" name="name" value="' . $row['name'] . '">

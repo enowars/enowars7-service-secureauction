@@ -1,6 +1,6 @@
 <?php 
 session_start();
-include("config.php");
+include("db_connect.php");
 include("user.php");
 
 $message = ""; // Initialize the message variable
@@ -58,10 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
                     if($userType === 'PREMIUM') {
                         $_SESSION['private_key'] = $private_key_d; // store private key in session
-                        $_SESSION['public_key_e'] = $public_key_e; // store public key e in session
-                        $_SESSION['public_key_n'] = $public_key_n; // store public key n in session
-                        $_SESSION['p'] = $p; // store p in session
-                        $_SESSION['q'] = $q; // store q in session
                         // Redirect to intermediate page for premium user
                         header("Location: display_key.php");
                     } else {

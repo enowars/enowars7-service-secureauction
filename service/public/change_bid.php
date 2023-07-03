@@ -1,7 +1,7 @@
 <?php
 // Start session and include necessary files
 session_start();
-include("config.php");
+include("db_connect.php");
 include("user.php");
 include("bid.php");
 include("item.php");
@@ -17,7 +17,7 @@ $item = new Item($con);
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data
     $itemId = $_POST['item_id'];
-    $userId = $user_data['user_id']; // Get the user ID from the session
+    $userId = $user_data['user_id']; 
     $newBid = $_POST['new_bid'];
 
     // Validate form data

@@ -1,7 +1,6 @@
 <?php
 session_start();
-
-include "config.php";
+include("db_connect.php");
 include "user.php";
 include "item.php";
 include "bid.php";

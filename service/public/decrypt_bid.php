@@ -1,5 +1,5 @@
 <?php 
-include("config.php");
+include("db_connect.php");
 include("user.php");
 include("item.php");
 include("bid.php");

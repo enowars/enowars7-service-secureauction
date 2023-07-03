@@ -2,11 +2,13 @@ version: '3'
 
 services:
   www:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ".:/var/www/html"
+      - "./public:/var/www/html"
     ports:
       - 8181:80
     depends_on:
@@ -22,10 +24,3 @@ services:
       MYSQL_DATABASE: secureauction
       MYSQL_USER: appuser    
       MYSQL_PASSWORD: secure_password    
-  phpmyadmin:
-      image: phpmyadmin/phpmyadmin
-      ports:
-        - 8001:80
-      environment:
-        - PMA_HOST=db
-        - PMA_PORT=3306

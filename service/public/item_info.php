@@ -1,5 +1,5 @@
 <?php 
-include("config.php");
+include("db_connect.php");
 include("user.php");
 include("item.php");
 include("bid.php");
@@ -39,6 +39,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($private_key_d)) {
     
     // Perform bid decryption
     $decrypted_bid = $bid->decryptBid($amount, $keys);
+}
+elseif ($_SERVER["REQUEST_METHOD"] == "POST" && empty($private_key_d)) {
+    echo "No private key received <br>";
+   
 }
 ?>
 
@@ -91,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($private_key_d)) {
                <p class="card-text"><?= $public_key_n ?></p>
             </div>
          </div>
-         <!-- Add form for private key input -->
+         <!-- Form for private key input -->
          <div class="card mb-4">
             <div class="card-header">
                Enter Private Key to Decrypt Bid

@@ -7,7 +7,7 @@ if(isset($_SESSION['message'])) {
 }
 
 // Includes the configuration, user, and item classes.
-include("config.php");
+include("db_connect.php");
 include("user.php");
 include("item.php");
 include("bid.php");
@@ -56,11 +56,11 @@ $offset = ($page - 1) * $itemsPerPage;
 $view = isset($_GET['view']) ? $_GET['view'] : 'getUserBids';
 switch ($view) {
     case 'getUserBids':
-        $result = $user->getUserBids($user_id, $offset, $itemsPerPage);
+        $result = $user->getUserBids($user_id, $offset, $itemsPerPage); // Get the bids received by the user
         $canChangeBid = false;
         break;
     case 'myBids':
-        $result = $user->getMyBids($user_id, $offset, $itemsPerPage); // This function should be implemented in your User class.
+        $result = $user->getMyBids($user_id, $offset, $itemsPerPage); // Get the bids placed by the user
         $canChangeBid = true;
         break;
     default:
@@ -69,13 +69,16 @@ switch ($view) {
         break;
 }
 
-
-
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
 
 // Calculate total pages
-$totalPages = ceil($totalItems / $itemsPerPage);
+if ($itemsPerPage == 0) {
+    $totalPages = 1; 
+} else {
+    $totalPages = ceil($totalItems / $itemsPerPage);
+}
+
 ?> <div class="container">
     <h1 class="mt-2">
         Welcome, <?= htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') ?> (User ID: <?= $user_data['user_id'] ?>)
@@ -130,7 +133,7 @@ $totalPages = ceil($totalItems / $itemsPerPage);
             }
             echo '<td>' . date('Y-m-d H:i:s', strtotime($row['bid_created_at'])) . '</td>';
             $amount = $row['bid_amount'];
-            $chunks = str_split($amount, 70);
+            $chunks = str_split($amount, 60);
             echo '<td class="bid-amount">';
             foreach ($chunks as $chunk) {
                 echo '<div>' . $chunk . '</div>';
@@ -142,7 +145,7 @@ $totalPages = ceil($totalItems / $itemsPerPage);
                 <form action="change_bid.php" method="post">
                     <input type="hidden" name="item_id" value="' . $row['item_id'] . '">
                     <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
-                    <input type="text" name="new_bid" min="0" required>
+                    <input type="text" name="new_bid" min="0" placeholder="New bid" required>
                     <input type="submit" value="Change Bid" class="btn btn-primary">
                 </form>
                 </td>';
@@ -154,7 +157,7 @@ $totalPages = ceil($totalItems / $itemsPerPage);
                     <input type="hidden" name="item_id" value="' . $row['id'] . '">
                     <input type="hidden" name="user_id" value="' . $user_data['user_id'] . '">
                     <input type="hidden" name="amount" value="' . $row['bid_amount'] . '">
-                    <input type="password" name="private_key_d" placeholder="Enter your private key" >
+                    <input type="password" name="private_key_d" placeholder="Enter your private key" required>
                     <input type="submit" value="Show Bid" class="btn btn-primary">
                 </form>
                 </td>';
@@ -193,5 +196,4 @@ $totalPages = ceil($totalItems / $itemsPerPage);
         // Includes the page's footer.
         include("includes/footer.php"); 
     ?> </body>
-
 </html>
