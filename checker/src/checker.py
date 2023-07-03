@@ -123,10 +123,7 @@ async def create_item(client: AsyncClient, item_name, start_price, item_type='RE
         query_params = urllib.parse.parse_qs(parsed_url.query)
         item_id = int(query_params.get('id')[0]) # type: ignore
         encrypted_amount = query_params.get('encryptedAmount', [None])[0]
-        if item_type == 'REGULAR':
-            return item_id, None
-        else:
-            return item_id, encrypted_amount
+        return item_id, encrypted_amount
     else:
         logger.error(f"Failed to create the item. Status code: {response.status_code}")
         raise MumbleException("Failed to create the item.")
@@ -218,9 +215,13 @@ async def putflag_note(
     user_name = ''.join(random.choices(string.ascii_lowercase, k=10))
     password = ''.join(random.choices(string.ascii_lowercase, k=10))
 
+    # chose a random item type
+    item_type = random.choice(['REGULAR', 'PREMIUM'])
     private_key, user_id = await signup(client, user_name, password, 'PREMIUM') #type: ignore
     item_name = ''.join(random.choices(string.ascii_lowercase, k=10))
-    item_id, encrypted_bid = await create_item(client, item_name, task.flag, 'PREMIUM') # type: ignore
+     # chose a random item type
+    item_type = random.choice(['REGULAR', 'PREMIUM'])
+    item_id, encrypted_bid = await create_item(client, item_name, task.flag, item_type) # type: ignore
     
     # storing data in the db to get it later in the getflag
     await db.set("item", (user_name, password, item_name, private_key, user_id, item_id, encrypted_bid))
@@ -267,7 +268,15 @@ async def getflag_note(
         assert_in(task.flag, decrypt_response.text, "Flag missing")
         logger.info("Flag found in response")
     except Exception as e:
-        logger.error(f"Flag not found: {e}")
+        logger.error(f"Flag not found item id: {item_id}")
+        # log the id of the item
+        logger.info(f"Item id: {item_id}")
+        # log the flag that was supposed to be found
+        logger.info(f"Flag: {task.flag}")
+        # log all data that was sent to decrypt_bid.php
+        logger.info(f"Data sent to decrypt_bid.php: {private_key_d}, {user_id}, {item_id}, {encrypted_bid}")
+        # log decrypted bid amount
+        logger.info(f"Decrypted bid amount: {decrypt_response.text}")
         raise MumbleException("Flag missing error")
 
 @checker.putflag(0)
