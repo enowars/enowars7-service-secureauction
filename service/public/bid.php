@@ -32,7 +32,7 @@
         // Function to retrieve the highest bid placed by a specific user for a given item
         public function getUserHighestBid($itemId, $userId) {
             // Check if $itemId and $userId are set and not empty
-            if(isset($itemId, $userId) && !empty($itemId) && !empty($userId)) {
+            if(!empty($itemId) && !empty($userId)) {
                 // Prepare SQL query to get the maximum bid amount for the given item ID by the specific user
                 $stmt = $this->mysqli->prepare("SELECT MAX(amount) as highest_bid FROM bids WHERE item_id = ? AND user_id = ?");
                 $stmt->bind_param("ii", $itemId, $userId);
@@ -52,6 +52,7 @@
             }
         }
 
+        // TODO: Duplicate function, see above
         // Function to get the highest bid placed by a specific user for a given item
         public function getHighestBidByUser($itemId, $userId) {
             // Prepare the query with placeholders for the item ID and user ID

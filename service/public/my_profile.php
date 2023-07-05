@@ -28,6 +28,7 @@ $user_id = isset($_GET['user_id']) ? $_GET['user_id'] : $_SESSION['user_id'];
 
 // Check if the user_id matches the one stored in the session (current logged-in user)
 if ($user_id != $_SESSION['user_id']) {
+    var_dump($user_id);
     // If user_id is a number, it's possibly a legitimate user_id, so abort the script.
     if (is_numeric($user_id)) {
         die("Unauthorized access.");

@@ -129,8 +129,8 @@ class User
         bids.user_id as bidder_id, bids.created_at as bid_created_at, bids.amount as bid_amount
         FROM items 
         JOIN bids ON items.id = bids.item_id 
-        WHERE items.user_id = " . $user_id . " 
-        ORDER BY bids.created_at DESC, bids.amount DESC LIMIT " . $offset . ", " . $limit;
+        WHERE items.user_id = ? 
+        ORDER BY bids.created_at DESC, bids.amount DESC LIMIT ?, ?";
 
         // Prepare the statement
         $stmt = $this->connection->prepare($sql);
@@ -252,10 +252,13 @@ class User
     public function generate_stateful_rsa_keys($bit_length = 1024)
     {
         // Generate a random prime number p
-        $p = $this->generate_random_prime(($bit_length - 1) / 2);
+        $p = $this->generate_random_prime(($bit_length ) / 2);
        
-        // Generate a random prime number q
-        $q = $this->generate_random_prime($bit_length / 2);
+        do {
+            // Generate a random prime number q
+            $q = $this->generate_random_prime(($bit_length ) / 2);
+        }while($p == $q);
+
 
         // Calculate n = p * q
         $n = gmp_mul($p, $q);
