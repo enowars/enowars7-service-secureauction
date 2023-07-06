@@ -7,7 +7,7 @@ include("bid.php");
 // Get keys and identifiers from POST request
 $private_key_d = str_replace(array("\n", "\r", " "), '', $_POST['private_key_d']);
 $item_id = $_POST['item_id'];
-$user_id = $_POST['user_id']; // Not used
+$user_id = $_POST['user_id']; 
 $public_key_e = $_POST['public_key_e'];
 $public_key_n = $_POST['public_key_n'];
 $name = $_POST['name'];
@@ -16,10 +16,8 @@ $name = $_POST['name'];
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['bidamount'])) {
         $amount = $_POST['bidamount'];
-        //echo "Amount received: " . $amount;
     } else {
-        echo "No amount received <br>";  
-        var_dump($_POST);      
+        echo "No amount received <br>";        
     }
 }
 
@@ -41,8 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($private_key_d)) {
     $decrypted_bid = $bid->decryptBid($amount, $keys);
 }
 elseif ($_SERVER["REQUEST_METHOD"] == "POST" && empty($private_key_d)) {
-    echo "No private key received <br>";
-   
+    $decrypted_bid = "No private key received <br>";
 }
 ?>
 

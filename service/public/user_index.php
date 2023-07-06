@@ -8,7 +8,6 @@ include("user.php");    // Contains User class definition
 include("item.php");    // Contains Item class definition
 
 
-
 // Creating a User object and passing database connection as a parameter
 $user = new User($con);
 
@@ -66,13 +65,17 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
         echo '<table class="table table-striped">';
         echo '<thead>';
         echo '<tr><th scope="col">Item ID</th><th scope="col">Item Name</th><th scope="col">Start Price</th><th scope="col">Item Type</th>';
-        echo '<th scope="col">Created At</th>';
+        echo '<th scope="col">Time Remaining</th>';
         echo '<th scope="col">Creator ID</th>';  
         echo '<th scope="col">Bidder ID</th>';  
         echo '<th scope="col">Actions</th>';  
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
+
+        // Array to store creation times
+        $creationTimes = array();
+
         // Loop through each item and add them as a row in the table
         while ($row = $result->fetch_assoc()) {
             $highlightClass = ($user_data['user_type'] === 'PREMIUM' && $row['item_type'] === 'PREMIUM') ? 'table-warning' : '';
@@ -81,11 +84,15 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
             echo '<td>' . $row['name'] . '</td>';
             echo '<td>' . $row['start_price'] . '</td>';
             echo '<td>' . $row['item_type'] . '</td>';
-            echo '<td>' . date('Y-m-d H:i:s', strtotime($row['created_at'])) . '</td>'; 
-            echo '<td>' . $row['creator_id'] . '</td>'; 
-            echo '<td>' . (isset($row['bidder_id']) ? $row['bidder_id'] : 'N/A') . '</td>'; // Display the bidder ID or 'N/A' if there's no bid
- 
-            
+            // Fetch and store the creation time for each item
+            $createdAtUtc = date('c', strtotime($row['created_at']));
+            // Store the creation time in the array
+            $creationTimes[$row['id']] = $createdAtUtc;
+            echo '<td id="timer_' . $row['id'] . '">' . $createdAtUtc . '</td>'; 
+
+            echo '<td>' . $row['creator_id'] . '</td>';
+            echo '<td>' . (isset($row['bidder_id']) ? $row['bidder_id'] : 'N/A') . '</td>'; // Display the bidder ID or 'N/A' if there's no bidder
+           
             // Add "Decrypt Bid" form
             echo '<td>';
             if ($user_data['user_type'] === 'PREMIUM') {
@@ -106,9 +113,6 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
             echo '</td>';
             // "Place Bid" button
             echo '<td><a class="btn btn-success" href="item_detail.php?id=' . $row['id'] . '">Place Bid</a></td>';
-           
-            
-
             echo '</tr>';
         }
         echo '</tbody>';
@@ -145,6 +149,59 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
 
     ?>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript">
+    // Trigger function once the document is fully loaded
+    $(document).ready(function() {
+        // Convert the PHP creationTimes array into a JavaScript array
+        var creationTimes = <?php echo json_encode($creationTimes) ?>;
+
+        // For each item in the creationTimes array, start a timer
+        for (var itemId in creationTimes) {
+            startTimer(itemId, creationTimes[itemId]);
+        }
+    });
+
+    // Function to start a countdown timer for each item
+    function startTimer(itemId, createdAtUtc) {
+        // Convert the item's creation time to a moment.js date object
+        var createdAt = moment.utc(createdAtUtc);
+
+        // Set the time when the auction expires (10 minutes after creation)
+        var expiresAt = moment(createdAt).add(10, 'minutes');
+
+        // Start a timer that updates every second
+        var timerId = setInterval(function() {
+            // Get the current time in UTC
+            var now = moment.utc();
+
+            // Calculate how much time remains until the auction expires
+            var duration = moment.duration(expiresAt.diff(now));
+
+            // Get the remaining minutes and seconds
+            var mins = Math.floor(duration.asMinutes());
+            var secs = Math.floor(duration.seconds());
+
+            // Pad the minutes and seconds with a leading zero if they are less than 10
+            var minsString = (mins < 10 ? '0' : '') + mins;
+            var secsString = (secs < 10 ? '0' : '') + secs;
+
+            // Update the HTML element with the remaining time
+            $('#timer_' + itemId).html(minsString + ":" + secsString);
+
+            // If the current time is the same or later than the expiry time
+            if (now.isSameOrAfter(expiresAt)) {
+                // Stop the timer
+                clearInterval(timerId);
+
+                // Update the HTML element to show that the auction is closed
+                $('#timer_' + itemId).html("Closed");
+            }
+        }, 1000);  // Timer updates every 1000 milliseconds (1 second)
+    }
+</script>
+
 
 <!-- Including the footer file -->
 <?php 

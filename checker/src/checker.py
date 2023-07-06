@@ -215,8 +215,6 @@ async def putflag_note(
     user_name = ''.join(random.choices(string.ascii_lowercase, k=10))
     password = ''.join(random.choices(string.ascii_lowercase, k=10))
 
-    # chose a random item type
-    item_type = random.choice(['REGULAR', 'PREMIUM'])
     private_key, user_id = await signup(client, user_name, password, 'PREMIUM') #type: ignore
     item_name = ''.join(random.choices(string.ascii_lowercase, k=10))
      # chose a random item type

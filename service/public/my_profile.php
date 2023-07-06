@@ -1,12 +1,14 @@
 <?php 
 // Starts a new session or resumes an existing one.
 session_start();
+
+// If a message is set in the session, display it.
 if(isset($_SESSION['message'])) {
     echo $_SESSION['message'];
     unset($_SESSION['message']);
 }
 
-// Includes the configuration, user, and item classes.
+// Includes the configuration, user,bid and item classes.
 include("db_connect.php");
 include("user.php");
 include("item.php");
@@ -63,10 +65,6 @@ switch ($view) {
         $result = $user->getMyBids($user_id, $offset, $itemsPerPage); // Get the bids placed by the user
         $canChangeBid = true;
         break;
-    default:
-        $result = $user->getUserBids($user_id, $offset, $itemsPerPage);
-        $canChangeBid = false;
-        break;
 }
 
 // Gets the total number of items the user has placed bids on.
@@ -79,6 +77,7 @@ if ($itemsPerPage == 0) {
     $totalPages = ceil($totalItems / $itemsPerPage);
 }
 
+
 ?> <div class="container">
     <h1 class="mt-2">
         Welcome, <?= htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') ?> (User ID: <?= $user_data['user_id'] ?>)
@@ -87,14 +86,43 @@ if ($itemsPerPage == 0) {
         Status: <?= htmlspecialchars($user_data['user_type'], ENT_QUOTES, 'UTF-8') ?>
     </h3>
 
+    
     <form method="GET" action="">
         <select name="view" id="view" onchange="this.form.submit()">
             <option value="getUserBids" <?= isset($_GET['view']) && $_GET['view'] === 'getUserBids' ? 'selected' : '' ?>>Received Bids</option>
             <option value="myBids" <?= isset($_GET['view']) && $_GET['view'] === 'myBids' ? 'selected' : '' ?>>Placed Bids</option>
         </select>
     </form>
-    
 
+    <!-- Form to decrypt and rank bids -->
+    <form method="post" action="" class="form-padding">
+        <input type="text" name="item_id" id="item_id" placeholder="Item id">
+        <input type="text" name="private_key" id="private_key" placeholder="Enter your private key">
+        <input type="submit" name="decrypt_and_rank" value="Show Ranking">
+    </form>
+
+    <!-- Ranking for a specific item -->
+    <?php
+    if (isset($_POST['decrypt_and_rank'])) {
+        $item_id = isset($_POST['item_id']) ? $_POST['item_id'] : null;
+        $private_key = isset($_POST['private_key']) ? $_POST['private_key'] : null;
+
+        // Initialize a Bid object
+        $bid = new Bid($con);
+
+        // Retrieve and decrypt bids for a specific item
+        $decrypted_and_ranked_bids = $user->decryptAndRankUserBids($user_data['user_id'], $item_id, $private_key, $bid);
+        echo "<h3>Your Ranked Bids</h3>";
+        echo "<ul style='list-style-type: none;'>";
+        foreach($decrypted_and_ranked_bids as $index => $bid) {
+            $rank = $index + 1; // rank is index + 1 because index is 0-based
+            echo "<li>Rank: " . $rank . " - Item ID: " . $bid['item_id'] . " - Bidder ID: " . $bid['bidder_id'] . " - Bid Amount: " . $bid['amount'] . "</li>";
+        }
+        echo "</ul>";
+    }
+    ?>
+
+    
 <?php if ($result->num_rows > 0) {
         echo '<table class="table table-striped">';
         echo '<thead>';

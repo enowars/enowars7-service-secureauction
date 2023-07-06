@@ -52,21 +52,6 @@
             }
         }
 
-        // Function to get the highest bid placed by a specific user for a given item
-        public function getHighestBidByUser($itemId, $userId) {
-            // Prepare the query with placeholders for the item ID and user ID
-            $stmt = $this->mysqli->prepare("SELECT MAX(amount) AS highest_bid FROM bids WHERE item_id = ? AND user_id = ?");
-            $stmt->bind_param("ii", $itemId, $userId); // Bind the item ID and user ID parameters
-            $stmt->execute(); // Execute the statement
-            $result = $stmt->get_result(); // Get the result
-
-            if ($result && $result->num_rows > 0) {
-                $data = $result->fetch_assoc();
-                return $data['highest_bid'];
-            }
-            return 0;
-        }
-
         // Function to encrypt a message using RSA encryption
         public function rsaEncrypt($message, $publicKey) {
             if ($publicKey === null || empty($publicKey['public_key_e']) || empty($publicKey['public_key_n'])) {
@@ -84,7 +69,6 @@
         }
         
         public function decryptBid($encrypted_bid, $privateKey) {
-            $private_key_d = str_replace(array("\n", "\r", " "), '', $privateKey);
             // Check if private_key_d is set
             if(!isset($privateKey['private_key_d'])) {
                 return "Hint: You haven't provided a value for private_key_d.\n";   
@@ -167,16 +151,12 @@
                 $stmt->execute();
 
                 // Return the encrypted amount
-                //var_dump("Premium user placed an encrypted bid");
-                //var_dump($userId);
                 return $encryptedAmount;
             } else {
                 // Regular users place normal (unencrypted) bid, 
                 $stmt = $this->mysqli->prepare("INSERT INTO bids (user_id, item_id, amount) VALUES (?, ?, ?)");
                 $stmt->bind_param("iis", $userId, $itemId, $amount);
                 $stmt->execute();
-                //var_dump("Regular user placed a bid");
-                //var_dump($userId);
                 return true;
             }
         }    

@@ -17,7 +17,7 @@ $item = new Item($con);
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data
     $itemId = $_POST['item_id'];
-    $userId = $user_data['user_id']; 
+    $userId = $user_data['user_id']; // Get the user_id from the session
     $newBid = $_POST['new_bid'];
 
     // Validate form data

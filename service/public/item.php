@@ -92,7 +92,7 @@ class Item
             LEFT JOIN bids ON items.id = bids.item_id
             LEFT JOIN users ON items.user_id = users.user_id
             WHERE (items.item_type = 'PREMIUM' OR (items.item_type = 'REGULAR' AND users.user_type = 'PREMIUM')) 
-            AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 720 
+            AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 72000
             ORDER BY items.id DESC
             LIMIT ? OFFSET ?
             "); 
@@ -110,7 +110,7 @@ class Item
                                                 FROM items  
                                                 LEFT JOIN users ON items.user_id = users.user_id
                                                 WHERE item_type = 'REGULAR' 
-                                                AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 720 
+                                                AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 72000 
                                                 ORDER BY items.id DESC
                                                 LIMIT ? OFFSET ?"); 
             $stmt->bind_param("ii", $itemsPerPage, $offset);
@@ -188,6 +188,7 @@ class Item
         }
     }
 
+    // Define a method to get the bids for a specific item
     public function getSearchedItems($user_type = null, $name = null, $item_id = null)
     {
         // Prepare the base query

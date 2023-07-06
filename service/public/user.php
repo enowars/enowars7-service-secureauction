@@ -12,24 +12,40 @@ class User
     // Function to check if the user is logged in
     public function checkLogin()
     {
+        // Check if user_id is stored in session
         if (isset($_SESSION['user_id']))
         {
-            $user_id = $_SESSION['user_id'];
-            $sql = "SELECT * FROM users WHERE user_id = " . $user_id;
-            $result = $this
-                ->connection
-                ->query($sql);
+            $user_id = $_SESSION['user_id']; // Extract user_id from session
 
+            $sql = "SELECT * FROM users WHERE user_id = ?";
+            // Create a prepared stmt
+            $stmt = $this
+                ->connection
+                ->prepare($sql);
+
+            // Bind the user_id to the placeholder in the SQL statement
+            $stmt->bind_param("i", $user_id);
+
+            // Execute the prepared statement
+            $stmt->execute();
+
+            // Fetch the result of the executed statement
+            $result = $stmt->get_result();
+           
+            // Check if the query returned any result
             if ($result && $result->num_rows > 0)
             {
+                // Fetch the user data as an associative array
                 $user_data = $result->fetch_assoc();
+
+                // Return the user data
                 return $user_data;
             }
         }
         else
         {
             header("Location: index.php"); // If the user is not logged in, redirect to the login page
-            die;
+            die; // Terminate the script
         }
     }
 
@@ -170,36 +186,61 @@ class User
         return $result;
     }
 
-    public function decryptAndRankUserBids($user_id, $private_key_d, $bid)
+    // Ranking purpose
+    public function getUserItemBids($user_id, $item_id, $offset, $limit)
     {
-        // Get all bids of the user
-        $bids = $this->getUserBids($user_id, 0, PHP_INT_MAX);
+        $sql = "SELECT bids.id as bid_id, items.id as item_id, items.name as item_name, items.start_price, items.item_type, items.created_at as item_created_at,
+        bidder.user_id as bidder_id, bidder.public_key_n as bidder_public_key_n, bids.created_at as bid_created_at, bids.amount as bid_amount, 
+        owner.public_key_n as owner_public_key_n
+        FROM items 
+        JOIN bids ON items.id = bids.item_id 
+        JOIN users as bidder ON bidder.user_id = bids.user_id
+        JOIN users as owner ON owner.user_id = items.user_id
+        WHERE items.id = ? 
+        ORDER BY bids.created_at DESC LIMIT ?, ?";
+
+        // Prepare the query
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bind_param("iii", $item_id, $offset, $limit); 
+
+        // Execute the query
+        $stmt->execute();
+
+        // Get the result
+        $result = $stmt->get_result();
+
+        // Return the result
+        return $result;
+    }
+
+
+    // TODO: Not working correctly
+    public function decryptAndRankUserBids($user_id, $item_id, $private_key_d, $bid)
+    {
+        // Get all bids for the item by the user
+        $bids = $this->getUserItemBids($user_id, $item_id, 0, PHP_INT_MAX);
         
-        // Debug: dump the contents of the $bids object
-        echo "Debug: contents of \$bids:";
-        var_dump($bids);
-        echo "<br>";
-    
         // Decrypt bids and store them along with bid ids in a new array
         $decrypted_bids = array();
         while($row = $bids->fetch_assoc()) {
-            $decrypted_bid_amount = $bid->decryptBid($row['bid_amount'], $private_key_d);
-            array_push($decrypted_bids, array("id" => $row['item_id'], "amount" => $decrypted_bid_amount));
+            $privateKey = array('private_key_d' => $private_key_d, 'public_key_n' => $row['owner_public_key_n']);
+            $decrypted_bid_amount = $bid->decryptBid($row['bid_amount'], $privateKey);
+            array_push($decrypted_bids, array("item_id" => $row['item_id'], "bid_id" => $row['bid_id'], "bidder_id" => $row['bidder_id'], "amount" => $decrypted_bid_amount));
         }
         
-        // Debug: dump the contents of the $decrypted_bids array
-        echo "Debug: contents of \$decrypted_bids:";
-        var_dump($decrypted_bids);
-        echo "<br>";
-    
-        // Sort bids in descending order
+        // Sort bids in descending order and add rank
         usort($decrypted_bids, function($a, $b) {
-            return $b['amount'] - $a['amount'];
+            // Check if both amounts are numeric. If not, handle the case properly (e.g., by returning 0)
+            if (is_numeric($a['amount']) && is_numeric($b['amount'])) {
+                return $b['amount'] - $a['amount'];
+            } else {
+                return 0;
+            }
         });
-    
+
         return $decrypted_bids;
     }
-    
+
 
     // Function to fetch a user by username
     public function getUserByUsername($user_name)

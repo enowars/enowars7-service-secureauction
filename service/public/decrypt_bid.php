@@ -13,10 +13,8 @@ $user_id = $_POST['user_id'];
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['amount'])) {
         $amount = $_POST['amount'];
-        //echo "Amount received: " . $amount;
     } else {
         echo "No amount received <br>";
-        
     }
 }
 
@@ -32,8 +30,7 @@ $public_key_n = $publicKey['public_key_n'];
 
 $chunkSize = 50; // Define the chunk size
 
-// Split keys into chunks
-$chunksPublicKeyE = str_split($public_key_e, $chunkSize);
+// Split keys into chunks for display
 $chunksPublicKeyN = str_split($public_key_n, $chunkSize);
 $chunksPrivateKeyD = str_split($private_key_d, $chunkSize);
 
@@ -96,7 +93,7 @@ $decrypted_bid = $bid->decryptBid($amount, $keys);
                 <p class="card-text"><?= $decrypted_bid ?></p>
             </div>
         </div>
-        
+        <a href="my_profile.php" class="btn btn-primary">Go Back</a>
     </div>
 </body>
 </html>

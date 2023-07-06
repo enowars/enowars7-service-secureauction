@@ -35,11 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                     $public_key_e = $rsa_keys['public']['e'];
                     $public_key_n = $rsa_keys['public']['n'];
                     $private_key_d = $rsa_keys['private']['d']; // Get the private key
-                    
-                    // Exploit purpose
-                    $p = $rsa_keys['primes']['p'];
-                    $q = $rsa_keys['primes']['q'];
-                
+                           
                     $stmt = $con->prepare("INSERT INTO users (user_name, password, user_type, public_key_e, public_key_n) VALUES (?, ?, ?, ?, ?)");
                     $stmt->bind_param("sssss", $user_name, $hashed_password, $userType, $public_key_e, $public_key_n);
 

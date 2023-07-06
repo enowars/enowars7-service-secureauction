@@ -8,7 +8,7 @@ if (!isset($_SESSION['private_key'])) {
 
 $private_key = $_SESSION['private_key'];
 $user_id = $_SESSION['user_id']; // get user_id from the session
-// Unset the private key, p and q in the session so that refreshing the page won't display it again
+// Unset the private key in the session so that refreshing the page won't display it again
 unset($_SESSION['private_key']);
 ?>
 
