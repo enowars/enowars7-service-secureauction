@@ -94,12 +94,17 @@ if ($itemsPerPage == 0) {
         </select>
     </form>
 
-    <!-- Form to decrypt and rank bids -->
+    <!-- Show the "Show Ranking" form only if the user is PREMIUM -->
     <form method="post" action="" class="form-padding">
-        <input type="text" name="item_id" id="item_id" placeholder="Item id">
-        <input type="text" name="private_key" id="private_key" placeholder="Enter your private key">
+        <input type="text" name="item_id" id="item_id" placeholder="Item id" required>
+        <!-- Show the private key input field only if the user is PREMIUM -->
+        <?php if($user_data['user_type'] === 'PREMIUM') : ?>
+            <input type="text" name="private_key" id="private_key" placeholder="Enter your private key" required>
+        <?php endif; ?>
         <input type="submit" name="decrypt_and_rank" value="Show Ranking">
     </form>
+
+
 
     <!-- Ranking for a specific item -->
     <?php
@@ -111,7 +116,7 @@ if ($itemsPerPage == 0) {
         $bid = new Bid($con);
 
         // Retrieve and decrypt bids for a specific item
-        $decrypted_and_ranked_bids = $user->decryptAndRankUserBids($user_data['user_id'], $item_id, $private_key, $bid);
+        $decrypted_and_ranked_bids = $user->decryptAndRankUserBids($user_data['user_id'], $item_id, $private_key, $bid, $user_data['user_type']);
         echo "<h3>Your Ranked Bids</h3>";
         echo "<ul style='list-style-type: none;'>";
         foreach($decrypted_and_ranked_bids as $index => $bid) {
@@ -178,6 +183,7 @@ if ($itemsPerPage == 0) {
                 </form>
                 </td>';
             }
+            echo '<td>';
             // Show the "Decrypt Bid" form only if the user is PREMIUM
             if ($user_data['user_type'] === 'PREMIUM' && $canChangeBid === false) {
                 echo '<td>
@@ -189,7 +195,10 @@ if ($itemsPerPage == 0) {
                     <input type="submit" value="Show Bid" class="btn btn-primary">
                 </form>
                 </td>';
-            } 
+            } else if ($user_data['user_type'] === 'REGULAR' && $canChangeBid === false) { // Add a Demo Action button for regular users
+                echo '<button type="button" class="btn btn-secondary" disabled>Demo Action</button>';
+            }
+            echo '</td>';
             echo '</tr>';
         }
             echo '</tbody>';

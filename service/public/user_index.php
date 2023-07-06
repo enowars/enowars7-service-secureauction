@@ -169,7 +169,7 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
         var createdAt = moment.utc(createdAtUtc);
 
         // Set the time when the auction expires (10 minutes after creation)
-        var expiresAt = moment(createdAt).add(10, 'minutes');
+        var expiresAt = moment(createdAt).add(1200, 'minutes');
 
         // Start a timer that updates every second
         var timerId = setInterval(function() {

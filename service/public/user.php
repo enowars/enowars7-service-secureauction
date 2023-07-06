@@ -214,22 +214,30 @@ class User
     }
 
 
-    // TODO: Not working correctly
-    public function decryptAndRankUserBids($user_id, $item_id, $private_key_d, $bid)
+    public function decryptAndRankUserBids($user_id, $item_id, $private_key_d, $bid, $user_type)
     {
         // Get all bids for the item by the user
         $bids = $this->getUserItemBids($user_id, $item_id, 0, PHP_INT_MAX);
         
-        // Decrypt bids and store them along with bid ids in a new array
-        $decrypted_bids = array();
-        while($row = $bids->fetch_assoc()) {
-            $privateKey = array('private_key_d' => $private_key_d, 'public_key_n' => $row['owner_public_key_n']);
-            $decrypted_bid_amount = $bid->decryptBid($row['bid_amount'], $privateKey);
-            array_push($decrypted_bids, array("item_id" => $row['item_id'], "bid_id" => $row['bid_id'], "bidder_id" => $row['bidder_id'], "amount" => $decrypted_bid_amount));
+       // Decrypt bids and store them along with bid ids in a new array
+        $sorted_bids  = array();
+
+        if($user_type == 'REGULAR') {
+            // For regular users, just take the bids as they are
+            while($row = $bids->fetch_assoc()) {
+                array_push($sorted_bids, array("item_id" => $row['item_id'], "bid_id" => $row['bid_id'], "bidder_id" => $row['bidder_id'], "amount" => $row['bid_amount']));
+            }
+        } else {
+            // For premium users, decrypt the bids
+            while($row = $bids->fetch_assoc()) {
+                $privateKey = array('private_key_d' => $private_key_d, 'public_key_n' => $row['owner_public_key_n']);
+                $decrypted_bid_amount = $bid->decryptBid($row['bid_amount'], $privateKey);
+                array_push($sorted_bids , array("item_id" => $row['item_id'], "bid_id" => $row['bid_id'], "bidder_id" => $row['bidder_id'], "amount" => $decrypted_bid_amount));
+            }
         }
         
         // Sort bids in descending order and add rank
-        usort($decrypted_bids, function($a, $b) {
+        usort($sorted_bids , function($a, $b) {
             // Check if both amounts are numeric. If not, handle the case properly (e.g., by returning 0)
             if (is_numeric($a['amount']) && is_numeric($b['amount'])) {
                 return $b['amount'] - $a['amount'];
@@ -238,8 +246,8 @@ class User
             }
         });
 
-        return $decrypted_bids;
-    }
+        return $sorted_bids ;
+    } 
 
 
     // Function to fetch a user by username
