@@ -26,7 +26,7 @@ if(!$user_data) {
 }
 
 // Take user_id as a GET parameter
-$user_id = isset($_GET['user_id']) ? $_GET['user_id'] : $_SESSION['user_id'];
+$user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : $_SESSION['user_id'];
 
 // Check if the user_id matches the one stored in the session (current logged-in user)
 if ($user_id != $_SESSION['user_id']) {
@@ -58,7 +58,7 @@ $offset = ($page - 1) * $itemsPerPage;
 $view = isset($_GET['view']) ? $_GET['view'] : 'getUserBids';
 switch ($view) {
     case 'getUserBids':
-        $result = $user->getUserBids($user_id, $offset, $itemsPerPage); // Get the bids received by the user
+        $result = $user->getUserBids($user_id, $offset, $itemsPerPage, true); // Get the bids received by the user
         $canChangeBid = false;
         break;
     case 'myBids':
