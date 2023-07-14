@@ -119,7 +119,10 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && empty($private_key_d)) {
             </div>
             <div class="card-body">
                <p class="card-text"><?= $decrypted_bid ?></p>
+               
             </div>
+            <div class="card-footer">
+               <a href="user_index.php" class="btn btn-primary">Go to Auction</a>
          </div>
       </div>
    </body>

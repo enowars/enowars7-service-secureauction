@@ -50,3 +50,6 @@ The logout.php script is responsible for logging out a user. It destroys the ses
 # Note:
 First and second Vuln are working on server side. But unfortunately i did not have time to finish the checker for the second vulnerability. I have the code for it but it is not working properly. I will try to fix it and submit it later. Therefore the participants have only one vulnerability to exploit and patch. 
 
+
+## License
+secureauction is licensed under the MIT License. See [LICENSE](LICENSE) for the full license text.

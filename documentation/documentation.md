@@ -155,6 +155,9 @@ This design pattern, while effective for privacy, introduces a potential vulnera
 This prime number dependency in RSA key generation can be exploited by an attacker. An attacker can use the public key to calculate `p` and subsequently `q`, exposing the private key, leading to unauthorized access. The following code describe the dependence:
 
 ```php
+    // Generate a random prime number p
+    $p = $this->generate_random_prime(($bit_length - 1) / 2);
+    // Calculate q
     $offset = gmp_init("10");
     $increased_p = gmp_add($p, $offset);
     $number = gmp_mul($p, $increased_p);
@@ -177,7 +180,10 @@ A fix would be to generate `p` and `q` independently. It's crucial in RSA key ge
     $p = $this->generate_random_prime(($bit_length) / 2);
        
     // Generate a random prime number q
-    $q = $this->generate_random_prime(($bit_length) / 2);
+    do 
+    {
+        $q = $this->generate_random_prime(($bit_length) / 2);
+    } while (gmp_cmp($p, $q) == 0);
 ```
 
 ## Support and Further Assistance

@@ -5,18 +5,6 @@ USE secureauction;
 -- Set MySQL server timezone to UTC
 SET @@global.time_zone = '+00:00';
 
--- Ensuring that MYSQL event scheduler is ON
--- SET GLOBAL event_scheduler = ON;
-
--- Close expired auctions
-/*CREATE EVENT IF NOT EXISTS close_expired_auctions
-ON SCHEDULE EVERY 3 MINUTE
-DO
-  UPDATE items 
-  SET status = 'CLOSED' 
-  WHERE end_time <= CURRENT_TIMESTAMP AND status = 'OPEN';*/
-
-
 -- Create a `users` table for storing user account information
 CREATE TABLE IF NOT EXISTS users (
   user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -57,15 +45,6 @@ CREATE TABLE IF NOT EXISTS bids (
   INDEX (created_at)
 );
 
--- Create a `notifications` table for storing notifications
-CREATE TABLE IF NOT EXISTS notifications (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT,
-  message TEXT,
-  read_status BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
 
 -- Create new user with limited privileges
 CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'secure_password';

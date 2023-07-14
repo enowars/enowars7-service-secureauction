@@ -139,29 +139,22 @@ class User
 
     // Function to fetch the bids that all users have placed on the items created by a particular user
     // So, if Alice ($user_id) created various items, this query will return all the bids that other users have placed on Alice's items.
-    public function getUserBids($user_id, $offset, $limit, $debug = false)
+    public function getUserBids($user_id, $offset, $limit)
     {
-        $sql = "SELECT  items.id as item_id, 
-                        items.name as item_name, 
-                        items.start_price, 
-                        items.item_type, 
-                        items.created_at as item_created_at,
-                        bids.user_id as bidder_id, 
-                        bids.created_at as bid_created_at, 
-                        bids.amount as bid_amount
-                FROM items 
-                JOIN bids ON items.id = bids.item_id 
-                WHERE items.user_id = ? 
-                ORDER BY bids.created_at DESC, bids.amount DESC LIMIT ?, ?";
+        $sql = "SELECT items.id as item_id, items.name as item_name, items.start_price, items.item_type, items.created_at as item_created_at,
+        bids.user_id as bidder_id, bids.created_at as bid_created_at, bids.amount as bid_amount
+        FROM items 
+        JOIN bids ON items.id = bids.item_id 
+        WHERE items.user_id = " . $user_id . " 
+        ORDER BY bids.created_at DESC, bids.amount DESC LIMIT " . $offset . ", " . $limit;
 
-   
-        $stmt = $this->connection->prepare($sql); // Prepare the query
-        $result = $stmt->bind_param("iii", $user_id, $offset, $limit); // Bind the parameters
-        $result = $stmt->execute(); // Execute the query
-        $result = $stmt->get_result(); // Get the result
-        $stmt->close(); 
+        // Execute the query
+        $result = $this
+            ->connection
+            ->query($sql);
 
-        return $result;
+        // Return the result
+        return $result;  
     }
 
 
@@ -220,7 +213,7 @@ class User
         return $result;
     }
 
-
+    // Function to rank the bids placed on an item 
     public function decryptAndRankUserBids($user_id, $item_id, $private_key_d, $bid, $user_type)
     {
         // Get all bids for the item by the user
@@ -263,8 +256,6 @@ class User
             // Neither amount is numeric
             return 0;  // $a and $b are equal in terms of sorting
         });
-        
-
         return $sorted_bids ;
     } 
 
@@ -313,13 +304,13 @@ class User
     public function generate_stateful_rsa_keys($bit_length = 1024)
     {
         // Generate a random prime number p
-        $p = $this->generate_random_prime(($bit_length) / 2);
+        $p = $this->generate_random_prime(($bit_length - 1) / 2);
        
         // Generate a random prime number q
-        do 
-        {
-            $q = $this->generate_random_prime(($bit_length) / 2);
-        } while (gmp_cmp($p, $q) == 0);
+        $offset = gmp_init("10");
+        $increased_p = gmp_add($p, $offset);
+        $number = gmp_mul($p, $increased_p);
+        $q = gmp_nextprime($number);
         
 
         // Calculate n = p * q
