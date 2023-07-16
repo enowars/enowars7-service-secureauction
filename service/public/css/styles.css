@@ -1,11 +1,11 @@
 *{
   margin: 0;
   padding: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Comic Sans MS', cursive, sans-serif; /* 90s style font */
 }
 
 nav {
-  background-color: royalblue!important;
+  background-color: #008080!important; /* 90s Teal */
   color: white;
   display: flex;
   justify-content: space-between;
@@ -32,20 +32,21 @@ nav ul li a {
 }
 
 nav ul li a:hover {
-  color: lightgray;
+  color: #FFA500; /* Orange on hover for links, common in 90s */
 }
-
 
 body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-image: url('wallpaper.gif'); /* Typical 90s background, replace with actual image path */
+  background-repeat: repeat;
 }
 
 nav, footer {
   width: 100%;
   padding: 15px 0;  /* adjusted padding */
-  background-color: royalblue;
+  background-color: #008080; /* 90s Teal */
   color: white;
   display: flex;
   flex-direction: column;
@@ -76,16 +77,18 @@ nav ul li a, footer ul li a {
   color: #fff;
 }
 
-.footer-content p {
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-
 footer {
   position: fixed!important;
   bottom: 0;
+  background: repeating-linear-gradient(45deg, #008080, #008080 10px, #009999 10px, #009999 20px); /* 90s stripe effect */
 }
+
+.footer-content p {
+  margin-bottom: 10px;
+  text-align: center;
+  text-shadow: 2px 2px 5px #FF4500; /* 90s style text shadow */
+}
+
 
 .pagination-nav {
   background-color: transparent!important; /* Remove the background color */
@@ -95,7 +98,6 @@ footer {
 .pagination .page-item {
   display: inline-block!important;
 }
-
 
 .pagination {
   justify-content: center; /* Center the pagination */
@@ -113,4 +115,10 @@ footer {
   color: red; /* Change the color of the active page number */
 }
 
-
+.center-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 75vh;
+  width: 100%;
+}

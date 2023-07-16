@@ -100,7 +100,23 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: royalblue;
+            background-color: #008080; /* 90s Teal */
+            font-family: 'Comic Sans MS', cursive, sans-serif; /* 90s style font */
+        }
+        .container {
+            max-width: 100%; /* Increased container width */
+            background-color: #fff;
+            padding: 40px;
+            border: 3px solid #000; /* Thick black border */
+            border-radius: 0; /* No round corners */
+        }
+        .btn-primary {
+            background-color: #000; /* Black buttons */
+            color: #fff; /* White text */
+        }
+        .alert-danger {
+            color: #000; /* Black text */
+            background-color: #ff0000; /* Red background */
         }
     </style>
 </head>

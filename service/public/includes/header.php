@@ -10,7 +10,7 @@
 </head>
 <body>
     <nav>
-        <h2>CTF-SERVICE</h2>
+        <h2><marquee>SECUREAUCTION</marquee></h2> <!-- Classic 90s marquee effect -->
         <ul>
             <li><a href="user_index.php">Auction</a></li>
             <li><a href="my_profile.php">My Profile</a></li>

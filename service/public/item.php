@@ -21,7 +21,7 @@ class Item
         // Prepare the SQL statement to insert a new item with the given name, start price, item type and end time
         $stmt = $this
             ->mysqli
-            ->prepare("INSERT INTO items (user_id, name, start_price, item_type, end_time) VALUES (?, ?, ?, ?, ADDDATE(CURRENT_TIMESTAMP, INTERVAL 10 MINUTE))");
+            ->prepare("INSERT INTO items (user_id, name, start_price, item_type, end_time, created_at) VALUES (?, ?, ?, ?, ADDDATE(CURRENT_TIMESTAMP, INTERVAL 10 MINUTE), CURRENT_TIMESTAMP)");
 
         // Bind the variables to the statement as parameters
         $stmt->bind_param("isss", $userId, $itemName, $startPrice, $itemType);

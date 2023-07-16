@@ -64,22 +64,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Item</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style type="text/css">
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: royalblue;
-        }
-    </style>
-</head>
-<body>
+<?php include 'includes/header.php'; ?>
+
+<div class="center-screen">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
@@ -115,6 +102,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+</div>
+
+<?php include 'includes/footer.php'; ?>
