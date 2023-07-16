@@ -163,9 +163,6 @@ async def calculate_d(p, q, e, rounding = 0):
 
     # Calculate d, the modular inverse of e under φ(n)
     d = mod_inverse(e, phi_n)
-
-    print(f"Calculated rounding: {rounding}")
-    print(f"Calculated d: {d}")
     return d
 
 
@@ -292,8 +289,7 @@ async def putflag_note(
     item_name = ''.join(random.choices(string.ascii_lowercase, k=10))
 
     item_id = await create_item(client, item_name, task.flag,  'REGULAR')
-    #await place_bid(client, item_id, task.flag)
-
+    
     await db.set("item", (user_name, password, item_name))
 
     return user_name
