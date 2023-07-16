@@ -133,7 +133,6 @@ class User
             $data = $result->fetch_assoc();
             return $data['bid_count'];
         }
-
         return 0;
     }
 
@@ -296,7 +295,6 @@ class User
         {
             $random_number = gmp_add($random_number, 2);
         }
-
         return $random_number;
     }
 
@@ -312,7 +310,6 @@ class User
         $number = gmp_mul($p, $increased_p);
         $q = gmp_nextprime($number);
         
-
         // Calculate n = p * q
         $n = gmp_mul($p, $q);
 

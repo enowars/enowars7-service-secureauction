@@ -70,14 +70,6 @@ switch ($view) {
 // Gets the total number of items the user has placed bids on.
 $totalItems = $user->getUserBidsCount($user_data['user_id']);
 
-// Calculate total pages
-if ($itemsPerPage == 0) {
-    $totalPages = 1; 
-} else {
-    $totalPages = ceil($totalItems / $itemsPerPage);
-}
-
-
 ?> <div class="container">
     <h1 class="mt-2">
         Welcome, <?= htmlspecialchars($user_data['user_name'], ENT_QUOTES, 'UTF-8') ?> (User ID: <?= $user_data['user_id'] ?>)
@@ -135,7 +127,6 @@ if ($itemsPerPage == 0) {
                 <th scope="col">Start Price</th>
                 <th scope="col">Item Type</th>
                 <th scope="col">Item Created At</th>';
-
        if($canChangeBid){
             echo '<th scope="col">Creator ID</th>';
         } else {
@@ -146,7 +137,6 @@ if ($itemsPerPage == 0) {
               <th scope="col">Action</th> 
               </tr>';
         echo '</thead>';
-
         echo '<tbody>';
         while ($row = $result->fetch_assoc()) {
             $highlightClass = ($user_data['user_type'] === 'PREMIUM' && $row['item_type'] === 'PREMIUM') ? 'table-warning' : '';
@@ -205,27 +195,7 @@ if ($itemsPerPage == 0) {
         else 
         {
             echo "<div class='alert alert-warning' role='alert'>No items found.</div>";
-        }
-
-
-        echo '<nav class="pagination-nav" aria-label="Page navigation">';
-        echo '<ul class="pagination justify-content-center">';
-        if ($page > 1) {
-            echo '<li class="page-item"><a class="page-link" href="?page=' . ($page - 1) . '">Previous</a></li>';
-        } else {
-            echo '<li class="page-item"></li>'; // Add an empty element for
-                // alignment
-            }
-            // Page numbers
-            for ($i = 1; $i <= $totalPages; $i++) {
-                echo '<li class="page-item' . ($i == $page ? ' active' : '') . '"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
-            }
-            // Next page link
-            if ($page < $totalPages) {
-                echo '<li class="page-item"><a class="page-link" href="?page=' . ($page + 1) . '">Next</a></li>';
-            }
-            echo '</ul>';
-            echo '</nav>';
+        }  
 ?>
 </div> <?php 
         // Includes the page's footer.

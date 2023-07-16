@@ -36,7 +36,8 @@ if (isset($_POST['submit'])) {
 }
 
 // Getting the total number of items
-$totalItems = $item->getTotalItems();
+//$totalItems = $item->getTotalItems();
+$totalItems = $item->getTotalItems($user_data['user_type']);
 
 // Calculate the total number of pages
 $totalPages = ceil($totalItems / $itemsPerPage)+1;
@@ -75,7 +76,6 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
 
         // Array to store creation times
         $creationTimes = array();
-
         // Loop through each item and add them as a row in the table
         while ($row = $result->fetch_assoc()) {
             $highlightClass = ($user_data['user_type'] === 'PREMIUM' && $row['item_type'] === 'PREMIUM') ? 'table-warning' : '';
@@ -169,7 +169,7 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
         var createdAt = moment.utc(createdAtUtc);
 
         // Set the time when the auction expires (10 minutes after creation)
-        var expiresAt = moment(createdAt).add(1200, 'minutes');
+        var expiresAt = moment(createdAt).add(10, 'minutes');
 
         // Start a timer that updates every second
         var timerId = setInterval(function() {
@@ -201,7 +201,6 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
         }, 1000);  // Timer updates every 1000 milliseconds (1 second)
     }
 </script>
-
 
 <!-- Including the footer file -->
 <?php 

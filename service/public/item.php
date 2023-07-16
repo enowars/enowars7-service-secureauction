@@ -21,7 +21,7 @@ class Item
         // Prepare the SQL statement to insert a new item with the given name, start price, item type and end time
         $stmt = $this
             ->mysqli
-            ->prepare("INSERT INTO items (user_id, name, start_price, item_type, end_time) VALUES (?, ?, ?, ?, ADDDATE(CURRENT_TIMESTAMP, INTERVAL 15 MINUTE))");
+            ->prepare("INSERT INTO items (user_id, name, start_price, item_type, end_time) VALUES (?, ?, ?, ?, ADDDATE(CURRENT_TIMESTAMP, INTERVAL 10 MINUTE))");
 
         // Bind the variables to the statement as parameters
         $stmt->bind_param("isss", $userId, $itemName, $startPrice, $itemType);
@@ -74,7 +74,7 @@ class Item
     /*
     This SQL query retrieves item details, associated bids, and public key values (e and n) of the item's owner. 
     It ensures that all items get included, even if they have no bids. 
-    The query only considers items created within the last 12 minutes, and returns results in a descending order by item ID, 
+    The query only considers items created within the last 10 minutes, and returns results in a descending order by item ID, 
     showing the newest items first. The 'LIMIT' and 'OFFSET' parameters are utilized for pagination, 
     controlling the number of records fetched per page. 
     */
@@ -92,7 +92,7 @@ class Item
             LEFT JOIN bids ON items.id = bids.item_id
             LEFT JOIN users ON items.user_id = users.user_id
             WHERE (items.item_type = 'PREMIUM' OR (items.item_type = 'REGULAR' AND users.user_type = 'PREMIUM')) 
-            AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 72000
+            AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600
             ORDER BY items.id DESC
             LIMIT ? OFFSET ?
             "); 
@@ -110,7 +110,7 @@ class Item
                                                 FROM items  
                                                 LEFT JOIN users ON items.user_id = users.user_id
                                                 WHERE item_type = 'REGULAR' 
-                                                AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 72000 
+                                                AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 
                                                 ORDER BY items.id DESC
                                                 LIMIT ? OFFSET ?"); 
             $stmt->bind_param("ii", $itemsPerPage, $offset);
@@ -136,7 +136,7 @@ class Item
     }
 
     // Define a method to get the total number of items in the database
-    public function getTotalItems()
+    /*public function getTotalItems()
     {
          // Count the total number of items
         $query = "SELECT COUNT(*) as total FROM items";
@@ -156,7 +156,55 @@ class Item
         }
 
         return $totalItems + $additionalBids;
+    }*/
+
+    public function getTotalItems($user_type)
+    {
+        $totalItems = 0;
+        $additionalBids = 0;
+        
+        if ($user_type === 'REGULAR') {
+            // For a 'REGULAR' user, count only 'REGULAR' items created by 'REGULAR' users
+            $query = "SELECT COUNT(*) as total FROM items INNER JOIN users ON items.user_id = users.user_id WHERE items.item_type = 'REGULAR' AND users.user_type = 'REGULAR'";
+            $result = $this->mysqli->query($query);
+            $totalItems = $result->fetch_assoc()['total'];
+
+            // Count the number of item_id in bids table that appear more than once for 'REGULAR' items created by 'REGULAR' users
+            $query = "SELECT COUNT(bids.item_id) as additional 
+                    FROM bids 
+                    INNER JOIN items ON bids.item_id = items.id
+                    INNER JOIN users ON items.user_id = users.user_id
+                    WHERE items.item_type = 'REGULAR' AND users.user_type = 'REGULAR'
+                    GROUP BY bids.item_id 
+                    HAVING COUNT(bids.item_id) > 1";
+
+        } elseif ($user_type === 'PREMIUM') {
+            // For a 'PREMIUM' user, count both 'REGULAR' items created by 'PREMIUM' users and 'PREMIUM' items
+            $query = "SELECT COUNT(*) as total 
+                    FROM items 
+                    INNER JOIN users ON items.user_id = users.user_id 
+                    WHERE (items.item_type = 'PREMIUM' OR (items.item_type = 'REGULAR' AND users.user_type = 'PREMIUM'))";
+            $result = $this->mysqli->query($query);
+            $totalItems = $result->fetch_assoc()['total'];
+
+            // Count the number of item_id in bids table that appear more than once for both 'REGULAR' items created by 'PREMIUM' users and 'PREMIUM' items
+            $query = "SELECT COUNT(bids.item_id) as additional 
+                    FROM bids 
+                    INNER JOIN items ON bids.item_id = items.id
+                    INNER JOIN users ON items.user_id = users.user_id
+                    WHERE (items.item_type = 'PREMIUM' OR (items.item_type = 'REGULAR' AND users.user_type = 'PREMIUM'))
+                    GROUP BY bids.item_id 
+                    HAVING COUNT(bids.item_id) > 1";
         }
+
+        $result = $this->mysqli->query($query);
+        while($row = $result->fetch_assoc()) {
+            $additionalBids += $row['additional'] - 1; // Subtract 1 because one bid is counted in totalItems
+        }
+
+        return $totalItems + $additionalBids;
+    }
+
 
     // Define a method to get the details of a specific item
     public function getItemDetails($itemId)
@@ -196,7 +244,7 @@ class Item
                 FROM items 
                 LEFT JOIN bids ON items.id = bids.item_id 
                 LEFT JOIN users ON bids.user_id = users.user_id 
-                WHERE TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 720 AND";
+                WHERE TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 AND";
     
         // Determine whether to search by name or id or both
         if (!is_null($name) && !is_null($item_id)) {
@@ -207,9 +255,14 @@ class Item
             $query .= " items.id = ?";
         }
     
-        // Add condition for user type (if user_type is 'REGULAR', only show 'REGULAR' items with status 'OPEN')
+        // Add condition for user type (if user_type is 'REGULAR', only show 'REGULAR' items)
         if ($user_type == 'REGULAR') {
             $query .= " AND items.item_type = 'REGULAR'";
+        }
+
+        // Add condition for user type (if user_type is 'PREMIUM', show both 'REGULAR' items created by 'PREMIUM' users and 'PREMIUM' items)
+        if ($user_type == 'PREMIUM') {
+            $query .= " AND (items.item_type = 'PREMIUM' OR (items.item_type = 'REGULAR' AND users.user_type = 'PREMIUM'))";
         }
     
         // Prepare the query

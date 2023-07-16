@@ -68,7 +68,7 @@ def create_item(item_name, start_price, item_type):
 if __name__ == "__main__":
     # Create a demo data
     print("Creating demo data...")
-    # Create demo users and items in a loop
+    # Create demo users and items
     for i in range(10):
         # Create a premium user
         user_name = ''.join(random.choices(string.ascii_lowercase, k=10))

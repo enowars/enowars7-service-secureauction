@@ -93,6 +93,7 @@
 
             // Perform the decryption
             $decrypted_bid = gmp_powm(gmp_init($encrypted_bid, 10), gmp_init($privateKey['private_key_d'], 10), gmp_init($privateKey['public_key_n'], 10));
+            
             // Convert the result to a hexadecimal string
             $decrypted_bid_hex = gmp_strval($decrypted_bid, 16);
 
