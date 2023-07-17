@@ -23,7 +23,7 @@ unset($_SESSION['private_key']);
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: royalblue;
+            background-color: #008080;
         }
 
         .key-chunk {
