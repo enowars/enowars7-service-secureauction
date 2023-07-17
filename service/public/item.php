@@ -23,6 +23,7 @@ class Item
             ->mysqli
             ->prepare("INSERT INTO items (user_id, name, start_price, item_type, end_time, created_at) VALUES (?, ?, ?, ?, ADDDATE(CURRENT_TIMESTAMP, INTERVAL 10 MINUTE), CURRENT_TIMESTAMP)");
 
+        
         // Bind the variables to the statement as parameters
         $stmt->bind_param("isss", $userId, $itemName, $startPrice, $itemType);
 
@@ -72,7 +73,7 @@ class Item
     }
 
     /*
-    This SQL query retrieves item details, associated bids, and public key values (e and n) of the item's owner. 
+    Premium User: This SQL query retrieves item details, associated bids, and public key values (e and n) of the item's owner. 
     It ensures that all items get included, even if they have no bids. 
     The query only considers items created within the last 10 minutes, and returns results in a descending order by item ID, 
     showing the newest items first. The 'LIMIT' and 'OFFSET' parameters are utilized for pagination, 
@@ -106,10 +107,11 @@ class Item
         {
             $stmt = $this
                 ->mysqli
-                ->prepare("SELECT *, items.user_id AS creator_id  
+                ->prepare("SELECT  items.*,  items.user_id AS creator_id  
                                                 FROM items  
                                                 LEFT JOIN users ON items.user_id = users.user_id
                                                 WHERE item_type = 'REGULAR' 
+                                                AND users.user_type = 'REGULAR'
                                                 AND TIMESTAMPDIFF(SECOND, items.created_at, NOW()) < 600 
                                                 ORDER BY items.id DESC
                                                 LIMIT ? OFFSET ?"); 

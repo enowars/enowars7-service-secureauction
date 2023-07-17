@@ -78,8 +78,8 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
         $creationTimes = array();
         // Loop through each item and add them as a row in the table
         while ($row = $result->fetch_assoc()) {
-            $highlightClass = ($user_data['user_type'] === 'PREMIUM' && $row['item_type'] === 'PREMIUM') ? 'table-warning' : '';
-            echo '<tr class="' . $highlightClass . '">'; 
+            //$highlightClass = ($user_data['user_type'] === 'PREMIUM' && $row['item_type'] === 'PREMIUM') ? 'table-warning' : '';
+            //echo '<tr class="' . $highlightClass . '">'; 
             echo '<th scope="row">' . $row['id'] . '</th>';
             echo '<td>' . $row['name'] . '</td>';
             echo '<td>' . $row['start_price'] . '</td>';
@@ -159,11 +159,12 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
 
         // For each item in the creationTimes array, start a timer
         for (var itemId in creationTimes) {
+            console.log("Raw creation time for item " + itemId + ": " + creationTimes[itemId]);  // Add this line
             startTimer(itemId, creationTimes[itemId]);
         }
     });
 
-    // Function to start a countdown timer for each item
+
     function startTimer(itemId, createdAtUtc) {
         // Convert the item's creation time to a moment.js date object
         var createdAt = moment.utc(createdAtUtc);
@@ -171,10 +172,17 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
         // Set the time when the auction expires (10 minutes after creation)
         var expiresAt = moment(createdAt).add(10, 'minutes');
 
+        // For debugging, print out the creation time and expiry time for each item
+        console.log("Creation time for item " + itemId + ": " + createdAt.format());
+        console.log("Expiry time for item " + itemId + ": " + expiresAt.format());
+
         // Start a timer that updates every second
         var timerId = setInterval(function() {
             // Get the current time in UTC
             var now = moment.utc();
+
+            // For debugging, print out the current time at each update
+            console.log("Current time: " + now.format());
 
             // Calculate how much time remains until the auction expires
             var duration = moment.duration(expiresAt.diff(now));
@@ -182,6 +190,9 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
             // Get the remaining minutes and seconds
             var mins = Math.floor(duration.asMinutes());
             var secs = Math.floor(duration.seconds());
+
+            // For debugging, print out the remaining time at each update
+            console.log("Remaining time for item " + itemId + ": " + mins + " mins and " + secs + " secs.");
 
             // Pad the minutes and seconds with a leading zero if they are less than 10
             var minsString = (mins < 10 ? '0' : '') + mins;
@@ -200,6 +211,7 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
             }
         }, 1000);  // Timer updates every 1000 milliseconds (1 second)
     }
+
 </script>
 
 <!-- Including the footer file -->
