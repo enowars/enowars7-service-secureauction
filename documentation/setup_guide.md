@@ -1,4 +1,4 @@
-# Secure Auction - Setup Guide
+# SecureAuction - Setup Guide
 
 This guide provides step-by-step instructions on how to set up and get started with the Secure Auction application.
 
