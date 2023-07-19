@@ -48,6 +48,11 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && empty($private_key_d)) {
    <head>
       <title>Decrypt Bid</title>
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+      <style>
+            body {
+               font-family: 'Comic Sans MS', cursive, sans-serif;
+            }
+      </style>
    </head>
    <body>
       <div class="container">

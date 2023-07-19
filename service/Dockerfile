@@ -21,5 +21,8 @@ COPY entrypoint.sh /entrypoint.sh
 # Make the entrypoint.sh script executable
 RUN chmod +x /entrypoint.sh
 
+COPY cleanup.sh /cleanup.sh
+RUN chmod +x /cleanup.sh
+
 # Set the entrypoint.sh script as the container's entrypoint
 ENTRYPOINT ["/entrypoint.sh"]

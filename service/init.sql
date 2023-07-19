@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS items (
   user_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   end_time  TIMESTAMP DEFAULT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(user_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
   INDEX (created_at)
 );
 
@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS bids (
   item_id INT,
   ranking INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(user_id),
-  FOREIGN KEY (item_id) REFERENCES items(id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
   INDEX (created_at)
 );
 
