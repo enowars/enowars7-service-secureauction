@@ -27,6 +27,9 @@ The item.php script defines an Item class, which is the main object to handle th
 ### item_detail.php
 Displays the details of a specific auction item, as well as the highest bid the current user has placed on it. It also provides a form for the user to place a new bid.
 
+### item_info.php
+Upon receiving a POST request, it extracts required information including the private key, bid amount, and identifiers. The script then decrypts the bid using the provided private key and displays it on an HTML page.
+
 ### bid.php
 The bid.php file contains the Bid class, which handles operations related to the bids in the system. It provides methods to retrieve bids, place bids, obtain the highest bid for an item, and get a user's highest bid for an item. These methods are essential for managing the bidding process and maintaining bid-related information. Furthermore, this file provides methods to encrypt and decrypt bids for Premium users.
 

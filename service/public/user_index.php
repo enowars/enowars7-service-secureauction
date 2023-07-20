@@ -14,9 +14,6 @@ $user = new User($con);
 // Checking if the user is logged in, if logged in it returns user data, else redirects to login page
 $user_data = $user->checkLogin($con);
 
-// Including the header file
-include("includes/header.php");
-
 // Creating an Item object and passing database connection as a parameter
 $item = new Item($con);
 
@@ -36,12 +33,13 @@ if (isset($_POST['submit'])) {
 }
 
 // Getting the total number of items
-//$totalItems = $item->getTotalItems();
 $totalItems = $item->getTotalItems($user_data['user_type']);
 
 // Calculate the total number of pages
 $totalPages = ceil($totalItems / $itemsPerPage)+1;
 ?>
+
+<?php include("includes/header.php"); ?>
 
 <!-- Starting the HTML section of the page -->
 <div class="container">
@@ -203,10 +201,5 @@ $totalPages = ceil($totalItems / $itemsPerPage)+1;
 </script>
 
 <!-- Including the footer file -->
-<?php 
-    include("includes/footer.php"); 
-?> 
+<?php include("includes/footer.php"); ?> 
 
-<!-- Closing the body and html tags -->
-</body>
-</html>

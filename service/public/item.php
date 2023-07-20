@@ -137,29 +137,6 @@ class Item
         }
     }
 
-    // Define a method to get the total number of items in the database
-    /*public function getTotalItems()
-    {
-         // Count the total number of items
-        $query = "SELECT COUNT(*) as total FROM items";
-        $result = $this->mysqli->query($query);
-        $totalItems = $result->fetch_assoc()['total'];
-
-        // Count the number of item_id in bids table that appear more than once
-        $query = "SELECT COUNT(item_id) as additional 
-                FROM bids 
-                GROUP BY item_id 
-                HAVING COUNT(item_id) > 1";
-
-        $result = $this->mysqli->query($query);
-        $additionalBids = 0;
-        while($row = $result->fetch_assoc()) {
-            $additionalBids += $row['additional'] - 1; // Subtract 1 because one bid is counted in totalItems
-        }
-
-        return $totalItems + $additionalBids;
-    }*/
-
     public function getTotalItems($user_type)
     {
         $totalItems = 0;

@@ -8,7 +8,5 @@
 
     if (!$con) {
         die("Failed to connect to the database: " . mysqli_connect_error());
-    } else {
-        //echo "Connected successfully";
-    }
+    } 
 ?>

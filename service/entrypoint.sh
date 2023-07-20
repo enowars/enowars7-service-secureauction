@@ -27,7 +27,7 @@ import_database_schema
 # Start the cleanup process in the background
 while true; do
 	  /cleanup.sh
-	sleep 600
+	sleep 60
 done &
 
 # Execute the command provided as an argument to this script, defaulting to "apache2-foreground" as specified in the Dockerfile

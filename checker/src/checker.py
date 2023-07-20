@@ -107,26 +107,16 @@ async def login(client: AsyncClient, user_name, password, user_type='REGULAR'):
 
 async def create_item(client: AsyncClient, item_name, start_price, item_type='REGULAR') -> Tuple[int, Optional[str]]:
     logger.info(f"Attempting to create item: {item_name}")
-    item_data = {
-        "item_name": item_name,
-        "start_price": start_price,
-        "item_type": item_type
-    }
-    logger.debug(f"Item data: {item_data}")  # Logging the item_data
-    response = await client.post("create_item.php", data=item_data)
-    logger.debug(f"Create item response: {response.text}")
-
+    response = await client.post("create_item.php", data={"item_name": item_name, "start_price": start_price, "item_type": item_type})
+    
     if response.status_code  == 302:
-        redirect_uri = response.headers['Location']
-        logger.debug(f"Redirect URI: {redirect_uri}")
-        parsed_url = urllib.parse.urlparse(redirect_uri)
-        query_params = urllib.parse.parse_qs(parsed_url.query)
-        item_id = int(query_params.get('id')[0]) # type: ignore
-        encrypted_amount = query_params.get('encryptedAmount', [None])[0]
+        query_params = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(response.headers['Location']).query))
+        item_id = int(query_params.get('id', 0))
+        encrypted_amount = query_params.get('encryptedAmount', None)
         return item_id, encrypted_amount
-    else:
-        logger.error(f"Failed to create the item. Status code: {response.status_code}")
-        raise MumbleException("Failed to create the item.")
+
+    logger.error(f"Failed to create the item. Status code: {response.status_code}")
+    raise MumbleException("Failed to create the item.")
 
 
 async def bisect(f, low, up, rounding = 0):
