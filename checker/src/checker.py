@@ -116,7 +116,19 @@ async def create_item(client: AsyncClient, item_name, start_price, item_type='RE
         return item_id, encrypted_amount
 
     logger.error(f"Failed to create the item. Status code: {response.status_code}")
-    raise MumbleException("Failed to create the item.")
+     # Descriptive MumbleException
+    if response.status_code >= 500:
+        # The server had an internal error
+        raise MumbleException(f"Server error when creating the item. Status code: {response.status_code}")
+    elif response.status_code == 404:
+        # The requested URL was not found on the server
+        raise MumbleException("The URL create_item.php was not found on the server.")
+    elif response.status_code == 403:
+        # The server understood the request, but is refusing to fulfill it
+        raise MumbleException("Insufficient permissions to create the item on the server.")
+    else:
+        # General error (unknown)
+        raise MumbleException(f"Failed to create the item. Status code: {response.status_code}. Response content: {response.content}")
 
 
 async def bisect(f, low, up, rounding = 0):
