@@ -8,7 +8,7 @@ The SecureAuction application is a web-based auction platform where users can cr
 The Secure Auction Service has vulnerabilities in its two flag stores:
 - **Flag Store 1:** Contains two vulnerabilities.
 - **Flag Store 2:** Contains one vulnerability.
-The fixed version of the service is available in the `my_fix_branch` of the [Enowars7 Secure Auction repository](https://github.com/enowars/enowars7-service-secureauction/tree/my_fix_branch) on GitHub.
+
 
 ## IDOR Vulnerability (Flagstore 1)
 1. **Insecure Direct Object References (IDOR) in my_profile.php**
