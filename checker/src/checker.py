@@ -19,7 +19,6 @@ from enochecker3 import (
     Enochecker,
     ExploitCheckerTaskMessage,
     FlagSearcher,
-    BaseCheckerTaskMessage,
     PutflagCheckerTaskMessage,
     GetflagCheckerTaskMessage,
     PutnoiseCheckerTaskMessage,
